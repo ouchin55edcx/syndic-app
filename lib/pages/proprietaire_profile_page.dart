@@ -165,10 +165,6 @@ class _ProprietaireProfilePageState extends State<ProprietaireProfilePage> {
             label: 'Profil',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.euro),
-            label: 'Charges',
-          ),
-          BottomNavigationBarItem(
             icon: Icon(Icons.receipt),
             label: 'Paiements',
           ),
@@ -181,19 +177,13 @@ class _ProprietaireProfilePageState extends State<ProprietaireProfilePage> {
           switch (index) {
             case 0: // Profile - already here
               break;
-            case 1: // Charges
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => ChargesListPage()),
-              );
-              break;
-            case 2: // Payments
+            case 1: // Payments
               Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(builder: (context) => PaymentHistoryPage()),
               );
               break;
-            case 3: // Notifications
+            case 2: // Notifications
               Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(builder: (context) => NotificationsPage()),
@@ -449,15 +439,6 @@ class _ProprietaireProfilePageState extends State<ProprietaireProfilePage> {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 _buildFinancialButton(
-                  "Mes charges",
-                  Icons.euro,
-                  Colors.green,
-                  () => Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(builder: (context) => ChargesListPage()),
-                  ),
-                ),
-                _buildFinancialButton(
                   "Historique des paiements",
                   Icons.receipt,
                   Colors.blue,
@@ -467,9 +448,18 @@ class _ProprietaireProfilePageState extends State<ProprietaireProfilePage> {
                   ),
                 ),
                 _buildFinancialButton(
+                  "Notifications",
+                  Icons.notifications,
+                  Colors.orange,
+                  () => Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (context) => NotificationsPage()),
+                  ),
+                ),
+                _buildFinancialButton(
                   "Accueil",
                   Icons.home,
-                  Colors.orange,
+                  Colors.green,
                   () => Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(builder: (context) => HomeScreen()),

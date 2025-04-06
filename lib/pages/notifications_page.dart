@@ -270,7 +270,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 3, // Notifications page is selected
+        currentIndex: 2, // Notifications page is selected
         backgroundColor: const Color.fromARGB(255, 64, 66, 69),
         selectedItemColor: const Color.fromARGB(255, 75, 160, 173),
         unselectedItemColor: Colors.grey,
@@ -279,10 +279,6 @@ class _NotificationsPageState extends State<NotificationsPage> {
           BottomNavigationBarItem(
             icon: Icon(Icons.person),
             label: 'Profil',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.euro),
-            label: 'Charges',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.receipt),
@@ -301,19 +297,13 @@ class _NotificationsPageState extends State<NotificationsPage> {
                 MaterialPageRoute(builder: (context) => ProprietaireProfilePage()),
               );
               break;
-            case 1: // Charges
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => ChargesListPage()),
-              );
-              break;
-            case 2: // Payments
+            case 1: // Payments
               Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(builder: (context) => PaymentHistoryPage()),
               );
               break;
-            case 3: // Notifications - already here
+            case 2: // Notifications - already here
               break;
           }
         },

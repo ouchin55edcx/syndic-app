@@ -200,7 +200,7 @@ class _PaymentHistoryPageState extends State<PaymentHistoryPage> {
         iconTheme: IconThemeData(color: Colors.white),
       ),
       bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 2, // Payments page is selected
+        currentIndex: 1, // Payments page is selected
         backgroundColor: const Color.fromARGB(255, 64, 66, 69),
         selectedItemColor: const Color.fromARGB(255, 75, 160, 173),
         unselectedItemColor: Colors.grey,
@@ -209,10 +209,6 @@ class _PaymentHistoryPageState extends State<PaymentHistoryPage> {
           BottomNavigationBarItem(
             icon: Icon(Icons.person),
             label: 'Profil',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.euro),
-            label: 'Charges',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.receipt),
@@ -231,15 +227,9 @@ class _PaymentHistoryPageState extends State<PaymentHistoryPage> {
                 MaterialPageRoute(builder: (context) => ProprietaireProfilePage()),
               );
               break;
-            case 1: // Charges
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => ChargesListPage()),
-              );
+            case 1: // Payments - already here
               break;
-            case 2: // Payments - already here
-              break;
-            case 3: // Notifications
+            case 2: // Notifications
               Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(builder: (context) => NotificationsPage()),
