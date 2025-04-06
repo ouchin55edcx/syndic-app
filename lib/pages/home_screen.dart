@@ -5,7 +5,7 @@ import '../providers/user_provider.dart';
 import 'dashboard_page.dart';
 import 'schedule_meeting_page.dart';
 import 'messages_page.dart';
-import 'OwnersListPage.dart'; 
+import 'OwnersListPage.dart';
 import 'settings_page.dart';
 import 'charges_list_page.dart';
 import 'payment_history_page.dart';
@@ -36,7 +36,6 @@ class _HomeScreenState extends State<HomeScreen> {
     if (isSyndic) {
       _pages = [
         DashboardPage(),
-        MessagesPage(),
         ScheduleMeetingPage(),
         OwnersListPage(),
         ChargesListPage(),
@@ -50,7 +49,6 @@ class _HomeScreenState extends State<HomeScreen> {
         DashboardPage(),
         ChargesListPage(),      // Charges list with payment options
         PaymentHistoryPage(),   // Payment history
-        MessagesPage(),
         ReunionsListPage(),
         SettingsPage(),
       ];

@@ -37,7 +37,6 @@ class CustomBottomNavBar extends StatelessWidget {
             ? [
                 // Syndic navigation items
                 SalomonBottomBarItem(icon: Icon(Icons.home), title: Text("Accueil"), selectedColor: Colors.blue),
-                SalomonBottomBarItem(icon: Icon(Icons.chat_bubble), title: Text("Messages"), selectedColor: Colors.blue),
                 SalomonBottomBarItem(icon: Icon(Icons.calendar_today), title: Text("Planifier"), selectedColor: Colors.blue),
                 SalomonBottomBarItem(icon: Icon(Icons.business), title: Text("Propriétaires"), selectedColor: Colors.blue),
                 SalomonBottomBarItem(icon: Icon(Icons.euro), title: Text("Charges"), selectedColor: Colors.blue),
@@ -50,7 +49,6 @@ class CustomBottomNavBar extends StatelessWidget {
                 SalomonBottomBarItem(icon: Icon(Icons.home), title: Text("Accueil"), selectedColor: Colors.blue),
                 SalomonBottomBarItem(icon: Icon(Icons.euro), title: Text("Charges"), selectedColor: Colors.green),
                 SalomonBottomBarItem(icon: Icon(Icons.receipt), title: Text("Paiements"), selectedColor: Colors.green),
-                SalomonBottomBarItem(icon: Icon(Icons.chat_bubble), title: Text("Messages"), selectedColor: Colors.blue),
                 SalomonBottomBarItem(icon: Icon(Icons.groups), title: Text("Réunions"), selectedColor: Colors.blue),
                 SalomonBottomBarItem(icon: Icon(Icons.settings), title: Text("Paramètres"), selectedColor: Colors.blue),
               ],
