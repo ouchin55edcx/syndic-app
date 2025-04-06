@@ -118,10 +118,14 @@ class _PendingPaymentsPageState extends State<PendingPaymentsPage> {
 
     if (token != null) {
       try {
+        // Prepare confirmation data
         final confirmationData = {
           'notes': _confirmationNotes,
         };
 
+        debugPrint('Confirming payment ${payment.id} with token: $token');
+
+        // Call the API to confirm the payment
         final result = await _paymentService.confirmPayment(
           payment.id,
           confirmationData,
@@ -129,6 +133,7 @@ class _PendingPaymentsPageState extends State<PendingPaymentsPage> {
         );
 
         if (result['success']) {
+          // Show success message
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(result['message'] ?? 'Paiement confirmé avec succès'),
@@ -136,8 +141,18 @@ class _PendingPaymentsPageState extends State<PendingPaymentsPage> {
               duration: Duration(seconds: 3),
             ),
           );
-          _loadPendingPayments(); // Reload the list
+
+          // Display payment details if available
+          if (result['payment'] != null) {
+            final confirmedPayment = result['payment'] as Payment;
+            debugPrint('Payment confirmed: ${confirmedPayment.id}');
+            debugPrint('New status: ${confirmedPayment.statut}');
+          }
+
+          // Reload the payments list
+          _loadPendingPayments();
         } else {
+          // Show error message
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(result['message'] ?? 'Échec de la confirmation du paiement'),
@@ -147,6 +162,7 @@ class _PendingPaymentsPageState extends State<PendingPaymentsPage> {
           );
         }
       } catch (e) {
+        // Show exception message
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Une erreur est survenue: $e'),

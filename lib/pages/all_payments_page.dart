@@ -80,6 +80,110 @@ class _AllPaymentsPageState extends State<AllPaymentsPage> {
     ).then((_) => _loadPayments()); // Reload payments when returning
   }
 
+  Future<void> _confirmPayment(Payment payment) async {
+    // Show confirmation dialog
+    bool confirm = await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Confirmer le paiement'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Voulez-vous confirmer ce paiement?'),
+              SizedBox(height: 16),
+              Text('Montant: ${Payment.formatCurrency(payment.montant)}', style: TextStyle(fontWeight: FontWeight.bold)),
+              Text('Méthode: ${payment.methodePaiement}'),
+              Text('Référence: ${payment.reference}'),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: Text('Annuler'),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+              child: Text('Confirmer', style: TextStyle(color: Colors.white)),
+            ),
+          ],
+        );
+      },
+    ) ?? false;
+
+    if (!confirm) return;
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final token = userProvider.token;
+
+    if (token != null) {
+      try {
+        // Prepare confirmation data
+        final confirmationData = {
+          'notes': 'Paiement vérifié et confirmé par le syndic',
+        };
+
+        debugPrint('Confirming payment ${payment.id} with token: $token');
+
+        // Call the API to confirm the payment
+        final result = await _paymentService.confirmPayment(
+          payment.id,
+          confirmationData,
+          token,
+        );
+
+        if (result['success']) {
+          // Show success message
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(result['message'] ?? 'Paiement confirmé avec succès'),
+              backgroundColor: Colors.green,
+              duration: Duration(seconds: 3),
+            ),
+          );
+
+          // Display payment details if available
+          if (result['payment'] != null) {
+            final confirmedPayment = result['payment'] as Payment;
+            debugPrint('Payment confirmed: ${confirmedPayment.id}');
+            debugPrint('New status: ${confirmedPayment.statut}');
+          }
+
+          // Reload the payments list
+          _loadPayments();
+        } else {
+          // Show error message
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(result['message'] ?? 'Échec de la confirmation du paiement'),
+              backgroundColor: Colors.red,
+              duration: Duration(seconds: 3),
+            ),
+          );
+        }
+      } catch (e) {
+        // Show exception message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Une erreur est survenue: $e'),
+            backgroundColor: Colors.red,
+            duration: Duration(seconds: 3),
+          ),
+        );
+      }
+    }
+
+    setState(() {
+      _isLoading = false;
+    });
+  }
+
   String _formatDateTime(String dateTimeString) {
     try {
       final dateTime = DateTime.parse(dateTimeString);
@@ -101,11 +205,18 @@ class _AllPaymentsPageState extends State<AllPaymentsPage> {
         backgroundColor: const Color.fromARGB(255, 64, 66, 69),
         iconTheme: IconThemeData(color: Colors.white),
         actions: [
-          IconButton(
-            icon: Icon(Icons.pending_actions),
-            tooltip: 'Paiements en attente',
+          // Button to navigate to pending payments
+          ElevatedButton.icon(
+            icon: Icon(Icons.pending_actions, color: Colors.white),
+            label: Text('Paiements en attente', style: TextStyle(color: Colors.white)),
             onPressed: _navigateToPendingPayments,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.orange,
+              elevation: 0,
+              padding: EdgeInsets.symmetric(horizontal: 16),
+            ),
           ),
+          SizedBox(width: 8),
         ],
       ),
       body: _isLoading
@@ -369,6 +480,24 @@ class _AllPaymentsPageState extends State<AllPaymentsPage> {
                                                     ],
                                                   ),
                                                 ),
+                                                SizedBox(height: 16),
+                                                // Add confirm button for pending payments
+                                                if (isPending)
+                                                  Row(
+                                                    mainAxisAlignment: MainAxisAlignment.end,
+                                                    children: [
+                                                      ElevatedButton.icon(
+                                                        onPressed: () => _confirmPayment(payment),
+                                                        icon: Icon(Icons.check_circle),
+                                                        label: Text('Confirmer'),
+                                                        style: ElevatedButton.styleFrom(
+                                                          backgroundColor: Colors.green,
+                                                          foregroundColor: Colors.white,
+                                                          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
                                             ],
                                           ),
                                         ),

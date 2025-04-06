@@ -65,6 +65,7 @@ class PaymentService {
       debugPrint('Authorization header: Bearer $token');
       debugPrint('Request data: ${jsonEncode(confirmationData)}');
 
+      // Using the exact endpoint format as specified
       final response = await http.put(
         Uri.parse('$baseUrl/payments/$paymentId/confirm'),
         headers: {
@@ -80,12 +81,20 @@ class PaymentService {
       final Map<String, dynamic> responseData = jsonDecode(response.body);
 
       if (response.statusCode == 200) {
+        Payment? confirmedPayment;
+        try {
+          if (responseData['payment'] != null) {
+            confirmedPayment = Payment.fromJson(responseData['payment']);
+            debugPrint('Successfully parsed confirmed payment: ${confirmedPayment.id}');
+          }
+        } catch (e) {
+          debugPrint('Error parsing payment data: $e');
+        }
+
         return {
           'success': true,
           'message': responseData['message'] ?? 'Paiement confirmé avec succès',
-          'payment': responseData['payment'] != null
-              ? Payment.fromJson(responseData['payment'])
-              : null,
+          'payment': confirmedPayment,
         };
       } else {
         return {
