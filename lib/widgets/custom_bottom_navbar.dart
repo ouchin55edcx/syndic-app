@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:salomon_bottom_bar/salomon_bottom_bar.dart';
+import 'package:provider/provider.dart';
+import '../providers/user_provider.dart';
 
 class CustomBottomNavBar extends StatelessWidget {
   final int currentIndex;
@@ -9,6 +11,9 @@ class CustomBottomNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final userProvider = Provider.of<UserProvider>(context);
+    final bool isSyndic = userProvider.isSyndic;
+
     return Container(
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(0.8),
@@ -28,13 +33,27 @@ class CustomBottomNavBar extends StatelessWidget {
       child: SalomonBottomBar(
         currentIndex: currentIndex,
         onTap: onTap,
-        items: [
-          SalomonBottomBarItem(icon: Icon(Icons.home), title: Text("Home"), selectedColor: Colors.blue),
-          SalomonBottomBarItem(icon: Icon(Icons.chat_bubble), title: Text("Messages"), selectedColor: Colors.blue),
-          SalomonBottomBarItem(icon: Icon(Icons.calendar_today), title: Text("Réunion"), selectedColor: Colors.blue),
-          SalomonBottomBarItem(icon: Icon(Icons.business), title: Text("Propriétaires"), selectedColor: Colors.blue), // Ajout correct ici
-          SalomonBottomBarItem(icon: Icon(Icons.settings), title: Text("Settings"), selectedColor: Colors.blue),
-        ],
+        items: isSyndic
+            ? [
+                // Syndic navigation items
+                SalomonBottomBarItem(icon: Icon(Icons.home), title: Text("Accueil"), selectedColor: Colors.blue),
+                SalomonBottomBarItem(icon: Icon(Icons.chat_bubble), title: Text("Messages"), selectedColor: Colors.blue),
+                SalomonBottomBarItem(icon: Icon(Icons.calendar_today), title: Text("Planifier"), selectedColor: Colors.blue),
+                SalomonBottomBarItem(icon: Icon(Icons.business), title: Text("Propriétaires"), selectedColor: Colors.blue),
+                SalomonBottomBarItem(icon: Icon(Icons.euro), title: Text("Charges"), selectedColor: Colors.blue),
+                SalomonBottomBarItem(icon: Icon(Icons.payments), title: Text("Paiements"), selectedColor: Colors.blue),
+                SalomonBottomBarItem(icon: Icon(Icons.groups), title: Text("Réunions"), selectedColor: Colors.blue),
+                SalomonBottomBarItem(icon: Icon(Icons.settings), title: Text("Paramètres"), selectedColor: Colors.blue),
+              ]
+            : [
+                // Proprietaire navigation items
+                SalomonBottomBarItem(icon: Icon(Icons.home), title: Text("Accueil"), selectedColor: Colors.blue),
+                SalomonBottomBarItem(icon: Icon(Icons.chat_bubble), title: Text("Messages"), selectedColor: Colors.blue),
+                SalomonBottomBarItem(icon: Icon(Icons.euro), title: Text("Charges"), selectedColor: Colors.blue),
+                SalomonBottomBarItem(icon: Icon(Icons.receipt), title: Text("Paiements"), selectedColor: Colors.blue),
+                SalomonBottomBarItem(icon: Icon(Icons.groups), title: Text("Réunions"), selectedColor: Colors.blue),
+                SalomonBottomBarItem(icon: Icon(Icons.settings), title: Text("Paramètres"), selectedColor: Colors.blue),
+              ],
       ),
     );
   }
