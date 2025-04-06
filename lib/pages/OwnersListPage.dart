@@ -193,29 +193,11 @@ class _OwnersListPageState extends State<OwnersListPage> {
       appBar: AppBar(
         backgroundColor: const Color.fromARGB(255, 64, 66, 69),
         elevation: 0,
-        title: Row(
-          children: [
-            Text(
-              "Liste Des Propriétaires",
-              style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
-            ),
-            Spacer(),
-            GestureDetector(
-              onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => NotificationsPage()),
-              ),
-              child: NotificationBell(),
-            ),
-            GestureDetector(
-              onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => UserProfilePage()),
-              ),
-              child: UserAvatar(),
-            ),
-          ],
+        title: Text(
+          "Liste Des Propriétaires",
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
         ),
+        centerTitle: true,
       ),
       body: _isLoading
           ? Center(child: CircularProgressIndicator())

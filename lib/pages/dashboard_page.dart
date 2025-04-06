@@ -23,33 +23,11 @@ class DashboardPage extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: const Color.fromARGB(255, 64, 66, 69),
         elevation: 0,
-        title: Row(
-          children: [
-            Text(
-              "Tableau de bord",
-              style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
-            ),
-            Spacer(), // Ajoute un espace flexible entre le titre et les icônes
-            SizedBox(width: 20), // Ajoute un petit espace entre les icônes
-            NotificationBell(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => NotificationsPage()), // Redirige vers NotificationsPage
-                );
-              },
-            ),
-            GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => UserProfilePage()),
-                );
-              },
-              child: UserAvatar(), // Utilisation de textSize de 18
-            ),
-          ],
+        title: Text(
+          "Tableau de bord",
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
         ),
+        centerTitle: true,
       ),
       body: SingleChildScrollView(
         padding: EdgeInsets.all(16.0),
