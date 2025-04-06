@@ -179,10 +179,18 @@ class PaymentService {
             .toList();
 
         // Process charges data if available
-        final List<dynamic> chargesJson = responseData['charges'] ?? [];
-        final List<Charge> charges = chargesJson
-            .map((json) => Charge.fromJson(json))
-            .toList();
+        List<Charge> charges = [];
+        if (responseData['charges'] != null) {
+          try {
+            final List<dynamic> chargesJson = responseData['charges'] as List<dynamic>;
+            charges = chargesJson
+                .map((json) => Charge.fromJson(json as Map<String, dynamic>))
+                .toList();
+            debugPrint('Successfully parsed ${charges.length} charges');
+          } catch (e) {
+            debugPrint('Error parsing charges: $e');
+          }
+        }
 
         return {
           'success': true,

@@ -48,10 +48,16 @@ class _PaymentHistoryPageState extends State<PaymentHistoryPage> {
         final result = await _paymentService.getPaymentHistory(userId, token);
 
         if (result['success']) {
-          final List<dynamic> chargesJson = result['charges'] ?? [];
-          final List<Charge> charges = chargesJson
-              .map((json) => Charge.fromJson(json))
-              .toList();
+          List<Charge> charges = [];
+          try {
+            if (result['charges'] != null) {
+              final List<dynamic> chargesList = result['charges'] as List<dynamic>;
+              charges = chargesList.map((chargeData) => Charge.fromJson(chargeData as Map<String, dynamic>)).toList();
+              debugPrint('Successfully retrieved ${charges.length} charges');
+            }
+          } catch (e) {
+            debugPrint('Error retrieving charges: $e');
+          }
 
           setState(() {
             _payments = result['payments'] as List<Payment>;
@@ -368,7 +374,7 @@ class _PaymentHistoryPageState extends State<PaymentHistoryPage> {
                                                         Expanded(
                                                           child: Text(
                                                             payment.charge != null
-                                                                ? payment.charge!['titre'] ?? 'Paiement'
+                                                                ? (payment.charge is Map ? payment.charge!['titre'] : 'Paiement')
                                                                 : 'Paiement',
                                                             style: TextStyle(
                                                               fontSize: 16,

@@ -14,7 +14,7 @@ class Payment {
   final String? receiptPdfPath;
   final String createdAt;
   final String updatedAt;
-  final Map<String, dynamic>? charge;
+  final dynamic charge; // Can be Map<String, dynamic> or null
 
   Payment({
     required this.id,
@@ -38,8 +38,8 @@ class Payment {
   factory Payment.fromJson(Map<String, dynamic> json) {
     return Payment(
       id: json['id'] ?? '',
-      montant: (json['montant'] is int) 
-          ? (json['montant'] as int).toDouble() 
+      montant: (json['montant'] is int)
+          ? (json['montant'] as int).toDouble()
           : (json['montant'] ?? 0.0).toDouble(),
       datePayment: json['datePayment'] ?? '',
       methodePaiement: json['methodePaiement'] ?? '',
@@ -49,8 +49,8 @@ class Payment {
       syndicId: json['syndicId'] ?? '',
       statut: json['statut'] ?? '',
       isPartial: json['isPartial'] ?? false,
-      remainingAmount: (json['remainingAmount'] is int) 
-          ? (json['remainingAmount'] as int).toDouble() 
+      remainingAmount: (json['remainingAmount'] is int)
+          ? (json['remainingAmount'] as int).toDouble()
           : (json['remainingAmount'] ?? 0.0).toDouble(),
       notes: json['notes'] ?? '',
       receiptPdfPath: json['receiptPdfPath'],

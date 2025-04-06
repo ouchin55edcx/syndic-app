@@ -5,7 +5,7 @@ import '../providers/user_provider.dart';
 import 'dashboard_page.dart';
 import 'schedule_meeting_page.dart';
 import 'messages_page.dart';
-import 'OwnersListPage.dart'; // Import de la page des propriétaires
+import 'OwnersListPage.dart'; 
 import 'settings_page.dart';
 import 'charges_list_page.dart';
 import 'payment_history_page.dart';
