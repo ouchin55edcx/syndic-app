@@ -175,17 +175,95 @@ class _NotificationsPageState extends State<NotificationsPage> {
   }
 
   void _openPdf(String? pdfUrl) {
-    if (pdfUrl == null || pdfUrl.isEmpty) return;
+    if (pdfUrl == null || pdfUrl.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Aucun document disponible'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
 
     final url = 'http://localhost:3000$pdfUrl';
 
-    // Show a message with the URL instead of launching it
+    // Afficher une boîte de dialogue avec des options pour le PDF
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Document PDF'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Que souhaitez-vous faire avec ce document?'),
+              SizedBox(height: 16),
+              Text(
+                'URL: $url',
+                style: TextStyle(fontSize: 12, color: Colors.grey),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text('Annuler'),
+            ),
+            ElevatedButton.icon(
+              onPressed: () {
+                Navigator.of(context).pop();
+                _viewPdf(url);
+              },
+              icon: Icon(Icons.visibility),
+              label: Text('Visualiser'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blue,
+                foregroundColor: Colors.white,
+              ),
+            ),
+            ElevatedButton.icon(
+              onPressed: () {
+                Navigator.of(context).pop();
+                _downloadPdf(url);
+              },
+              icon: Icon(Icons.download),
+              label: Text('Télécharger'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.green,
+                foregroundColor: Colors.white,
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _viewPdf(String url) {
+    // Afficher le PDF dans le navigateur
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('URL du PDF: $url'),
+        content: Text('Ouverture du document: $url'),
         duration: Duration(seconds: 5),
       ),
     );
+
+    // Note: Dans une application réelle, vous utiliseriez url_launcher ou un plugin PDF viewer
+    // pour ouvrir le PDF dans le navigateur ou dans une visionneuse intégrée
+  }
+
+  void _downloadPdf(String url) {
+    // Télécharger le PDF
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Téléchargement du document: $url'),
+        duration: Duration(seconds: 5),
+      ),
+    );
+
+    // Note: Dans une application réelle, vous utiliseriez un plugin comme dio ou http
+    // pour télécharger le fichier et le sauvegarder dans le stockage de l'appareil
   }
 
   @override
@@ -426,16 +504,52 @@ class _NotificationsPageState extends State<NotificationsPage> {
                                           );
                                         }
                                       }),
+                                    // Affichage spécial pour les avis clients avec PDF
                                     if (notification.pdfUrl != null && notification.pdfUrl!.isNotEmpty)
                                       Padding(
                                         padding: const EdgeInsets.only(top: 12.0),
-                                        child: ElevatedButton.icon(
-                                          onPressed: () => _openPdf(notification.pdfUrl),
-                                          icon: Icon(Icons.picture_as_pdf),
-                                          label: Text('Voir le document'),
-                                          style: ElevatedButton.styleFrom(
-                                            backgroundColor: Colors.red,
-                                            foregroundColor: Colors.white,
+                                        child: Container(
+                                          padding: EdgeInsets.all(12),
+                                          decoration: BoxDecoration(
+                                            color: Colors.grey[100],
+                                            borderRadius: BorderRadius.circular(8),
+                                            border: Border.all(color: Colors.grey[300]!),
+                                          ),
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Row(
+                                                children: [
+                                                  Icon(Icons.picture_as_pdf, color: Colors.red),
+                                                  SizedBox(width: 8),
+                                                  Text(
+                                                    'Document PDF disponible',
+                                                    style: TextStyle(fontWeight: FontWeight.bold),
+                                                  ),
+                                                ],
+                                              ),
+                                              SizedBox(height: 8),
+                                              Text(
+                                                'Ce document contient des informations importantes concernant votre propriété.',
+                                                style: TextStyle(fontSize: 12, color: Colors.grey[700]),
+                                              ),
+                                              SizedBox(height: 12),
+                                              Row(
+                                                mainAxisAlignment: MainAxisAlignment.end,
+                                                children: [
+                                                  ElevatedButton.icon(
+                                                    onPressed: () => _openPdf(notification.pdfUrl),
+                                                    icon: Icon(Icons.open_in_new),
+                                                    label: Text('Ouvrir le document'),
+                                                    style: ElevatedButton.styleFrom(
+                                                      backgroundColor: Colors.blue,
+                                                      foregroundColor: Colors.white,
+                                                      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ],
                                           ),
                                         ),
                                       ),

@@ -192,12 +192,18 @@ class PaymentService {
         if (responseData['charges'] != null) {
           try {
             final List<dynamic> chargesJson = responseData['charges'] as List<dynamic>;
-            charges = chargesJson
-                .map((json) => Charge.fromJson(json as Map<String, dynamic>))
-                .toList();
+            for (var chargeData in chargesJson) {
+              try {
+                if (chargeData is Map<String, dynamic>) {
+                  charges.add(Charge.fromJson(chargeData));
+                }
+              } catch (e) {
+                debugPrint('Error parsing individual charge: $e');
+              }
+            }
             debugPrint('Successfully parsed ${charges.length} charges');
           } catch (e) {
-            debugPrint('Error parsing charges: $e');
+            debugPrint('Error parsing charges list: $e');
           }
         }
 

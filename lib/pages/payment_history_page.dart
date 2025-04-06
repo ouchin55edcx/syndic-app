@@ -8,6 +8,7 @@ import '../models/charge_model.dart';
 import 'proprietaire_profile_page.dart';
 import 'charges_list_page.dart';
 import 'notifications_page.dart';
+import 'make_payment_page.dart';
 
 class PaymentHistoryPage extends StatefulWidget {
   @override
@@ -22,6 +23,9 @@ class _PaymentHistoryPageState extends State<PaymentHistoryPage> {
   Map<String, dynamic>? _proprietaire;
   double _totalPaid = 0.0;
   double _totalDue = 0.0;
+  double _totalChargeAmount = 0.0;
+  double _totalChargePaid = 0.0;
+  double _totalChargeRemaining = 0.0;
   String? _startDate;
   String? _endDate;
   List<Charge> _charges = [];
@@ -48,15 +52,22 @@ class _PaymentHistoryPageState extends State<PaymentHistoryPage> {
         final result = await _paymentService.getPaymentHistory(userId, token);
 
         if (result['success']) {
+          // Les charges sont déjà converties en objets Charge dans le service
           List<Charge> charges = [];
-          try {
-            if (result['charges'] != null) {
-              final List<dynamic> chargesList = result['charges'] as List<dynamic>;
-              charges = chargesList.map((chargeData) => Charge.fromJson(chargeData as Map<String, dynamic>)).toList();
-              debugPrint('Successfully retrieved ${charges.length} charges');
+          double totalChargeAmount = 0.0;
+          double totalChargePaid = 0.0;
+          double totalChargeRemaining = 0.0;
+
+          if (result['charges'] != null) {
+            charges = result['charges'] as List<Charge>;
+            debugPrint('Successfully retrieved ${charges.length} charges');
+
+            // Calculer les totaux des charges
+            for (var charge in charges) {
+              totalChargeAmount += charge.montant;
+              totalChargePaid += charge.montantPaye;
+              totalChargeRemaining += charge.montantRestant;
             }
-          } catch (e) {
-            debugPrint('Error retrieving charges: $e');
           }
 
           setState(() {
@@ -71,6 +82,11 @@ class _PaymentHistoryPageState extends State<PaymentHistoryPage> {
             _startDate = result['startDate'];
             _endDate = result['endDate'];
             _relatedCharges = charges;
+
+            // Stocker les totaux des charges
+            _totalChargeAmount = totalChargeAmount;
+            _totalChargePaid = totalChargePaid;
+            _totalChargeRemaining = totalChargeRemaining;
           });
 
           // Debug information
@@ -117,6 +133,40 @@ class _PaymentHistoryPageState extends State<PaymentHistoryPage> {
         duration: Duration(seconds: 5),
       ),
     );
+  }
+
+  void _navigateToMakePayment(Charge charge) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => MakePaymentPage(charge: charge),
+      ),
+    ).then((_) => _loadPaymentHistory()); // Reload payment history when returning
+  }
+
+  // Méthode pour trouver le titre d'une charge à partir de son ID
+  String _findChargeTitle(String chargeId) {
+    // Chercher la charge dans la liste des charges associées
+    final charge = _relatedCharges.firstWhere(
+      (charge) => charge.id == chargeId,
+      orElse: () => Charge(
+        id: '',
+        titre: 'Paiement',
+        description: '',
+        montant: 0,
+        dateEcheance: '',
+        statut: '',
+        montantPaye: 0,
+        montantRestant: 0,
+        appartementId: '',
+        syndicId: '',
+        categorie: '',
+        createdAt: '',
+        updatedAt: '',
+      ),
+    );
+
+    return charge.id.isNotEmpty ? charge.titre : 'Paiement';
   }
 
   String _formatDate(String dateString) {
@@ -290,9 +340,75 @@ class _PaymentHistoryPageState extends State<PaymentHistoryPage> {
                                 ),
                               ],
                             ),
+                            // Divider pour séparer les informations générales des statistiques des charges
+                            Divider(height: 24),
+
+                            // Statistiques des charges
+                            Text(
+                              "Détails des charges",
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            SizedBox(height: 8),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  "Montant total des charges:",
+                                  style: TextStyle(fontSize: 14),
+                                ),
+                                Text(
+                                  Payment.formatCurrency(_totalChargeAmount),
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: 4),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  "Montant payé:",
+                                  style: TextStyle(fontSize: 14),
+                                ),
+                                Text(
+                                  Payment.formatCurrency(_totalChargePaid),
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.green,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: 4),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  "Montant restant à payer:",
+                                  style: TextStyle(fontSize: 14),
+                                ),
+                                Text(
+                                  Payment.formatCurrency(_totalChargeRemaining),
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                    color: _totalChargeRemaining > 0 ? Colors.red : Colors.green,
+                                  ),
+                                ),
+                              ],
+                            ),
+
+                            // Période
                             if (_startDate != null && _endDate != null)
                               Padding(
-                                padding: const EdgeInsets.only(top: 8.0),
+                                padding: const EdgeInsets.only(top: 16.0),
                                 child: Text(
                                   "Période: ${_formatDate(_startDate!)} - ${_formatDate(_endDate!)}",
                                   style: TextStyle(
@@ -373,9 +489,8 @@ class _PaymentHistoryPageState extends State<PaymentHistoryPage> {
                                                         SizedBox(width: 8),
                                                         Expanded(
                                                           child: Text(
-                                                            payment.charge != null
-                                                                ? (payment.charge is Map ? payment.charge!['titre'] : 'Paiement')
-                                                                : 'Paiement',
+                                                            // Trouver la charge associée au paiement
+                                                            _findChargeTitle(payment.chargeId),
                                                             style: TextStyle(
                                                               fontSize: 16,
                                                               fontWeight: FontWeight.bold,
@@ -463,17 +578,64 @@ class _PaymentHistoryPageState extends State<PaymentHistoryPage> {
                                                         if (payment.isPartial)
                                                           Padding(
                                                             padding: const EdgeInsets.only(top: 8.0),
-                                                            child: Row(
+                                                            child: Column(
+                                                              crossAxisAlignment: CrossAxisAlignment.start,
                                                               children: [
-                                                                Icon(Icons.account_balance_wallet, size: 16, color: Colors.orange),
-                                                                SizedBox(width: 4),
-                                                                Text(
-                                                                  'Paiement partiel - Restant: ${Payment.formatCurrency(payment.remainingAmount)}',
-                                                                  style: TextStyle(
-                                                                    color: Colors.orange,
-                                                                    fontWeight: FontWeight.bold,
-                                                                  ),
+                                                                Row(
+                                                                  children: [
+                                                                    Icon(Icons.account_balance_wallet, size: 16, color: Colors.orange),
+                                                                    SizedBox(width: 4),
+                                                                    Text(
+                                                                      'Paiement partiel - Restant: ${Payment.formatCurrency(payment.remainingAmount)}',
+                                                                      style: TextStyle(
+                                                                        color: Colors.orange,
+                                                                        fontWeight: FontWeight.bold,
+                                                                      ),
+                                                                    ),
+                                                                  ],
                                                                 ),
+
+                                                                // Ajouter un bouton pour effectuer un autre paiement si le montant restant est supérieur à 0
+                                                                if (payment.remainingAmount > 0 && isConfirmed)
+                                                                  Padding(
+                                                                    padding: const EdgeInsets.only(top: 12.0),
+                                                                    child: Row(
+                                                                      mainAxisAlignment: MainAxisAlignment.end,
+                                                                      children: [
+                                                                        ElevatedButton.icon(
+                                                                          onPressed: () {
+                                                                            // Trouver la charge associée au paiement
+                                                                            Charge? charge;
+                                                                            try {
+                                                                              charge = _relatedCharges.firstWhere(
+                                                                                (c) => c.id == payment.chargeId,
+                                                                              );
+                                                                            } catch (e) {
+                                                                              charge = null;
+                                                                            }
+
+                                                                            if (charge != null) {
+                                                                              _navigateToMakePayment(charge);
+                                                                            } else {
+                                                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                                                SnackBar(
+                                                                                  content: Text('Impossible de trouver la charge associée'),
+                                                                                  backgroundColor: Colors.red,
+                                                                                ),
+                                                                              );
+                                                                            }
+                                                                          },
+                                                                          icon: Icon(Icons.payment),
+                                                                          label: Text('Compléter le paiement'),
+                                                                          style: ElevatedButton.styleFrom(
+                                                                            backgroundColor: Colors.orange,
+                                                                            foregroundColor: Colors.white,
+                                                                            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                                                                          ),
+                                                                        ),
+                                                                      ],
+                                                                    ),
+                                                                  ),
                                                               ],
                                                             ),
                                                           ),
@@ -634,6 +796,27 @@ class _PaymentHistoryPageState extends State<PaymentHistoryPage> {
                                                                   'Déjà payé: ${Charge.formatCurrency(charge.montantPaye)}',
                                                                   style: TextStyle(
                                                                     color: Colors.green,
+                                                                  ),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                          ),
+
+                                                        // Ajouter un bouton pour effectuer un autre paiement si le montant restant est supérieur à 0
+                                                        if (charge.montantRestant > 0)
+                                                          Padding(
+                                                            padding: const EdgeInsets.only(top: 16.0),
+                                                            child: Row(
+                                                              mainAxisAlignment: MainAxisAlignment.end,
+                                                              children: [
+                                                                ElevatedButton.icon(
+                                                                  onPressed: () => _navigateToMakePayment(charge),
+                                                                  icon: Icon(Icons.payment),
+                                                                  label: Text('Effectuer un autre paiement'),
+                                                                  style: ElevatedButton.styleFrom(
+                                                                    backgroundColor: Colors.green,
+                                                                    foregroundColor: Colors.white,
+                                                                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                                                                   ),
                                                                 ),
                                                               ],
