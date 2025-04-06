@@ -3,7 +3,9 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../providers/user_provider.dart';
 import '../services/payment_service.dart';
+import '../services/proprietaire_service.dart';
 import '../models/payment_model.dart';
+import '../models/proprietaire_profile_model.dart';
 import 'pending_payments_page.dart';
 
 class AllPaymentsPage extends StatefulWidget {
@@ -13,10 +15,12 @@ class AllPaymentsPage extends StatefulWidget {
 
 class _AllPaymentsPageState extends State<AllPaymentsPage> {
   final PaymentService _paymentService = PaymentService();
+  final ProprietaireService _proprietaireService = ProprietaireService();
   bool _isLoading = true;
   String _errorMessage = '';
   List<Payment> _payments = [];
   double _totalAmount = 0.0;
+  Map<String, ProprietaireProfile> _proprietaires = {};
 
   @override
   void initState() {
@@ -50,6 +54,9 @@ class _AllPaymentsPageState extends State<AllPaymentsPage> {
             _payments = payments;
             _totalAmount = total;
           });
+
+          // Load proprietaire information for each payment
+          await _loadProprietairesInfo(payments, token);
         } else {
           setState(() {
             _errorMessage = result['message'] ?? 'Échec du chargement des paiements';
@@ -71,7 +78,44 @@ class _AllPaymentsPageState extends State<AllPaymentsPage> {
     });
   }
 
+  Future<void> _loadProprietairesInfo(List<Payment> payments, String token) async {
+    // Get unique proprietaire IDs
+    final Set<String> proprietaireIds = payments.map((p) => p.proprietaireId).toSet();
+
+    // Create a map to store proprietaire information
+    Map<String, ProprietaireProfile> proprietaires = {};
+
+    // Fetch information for each proprietaire
+    for (var id in proprietaireIds) {
+      try {
+        final result = await _proprietaireService.getProprietaireById(id, token);
+
+        if (result['success'] && result['proprietaire'] != null) {
+          proprietaires[id] = result['proprietaire'] as ProprietaireProfile;
+        }
+      } catch (e) {
+        debugPrint('Error fetching proprietaire $id: $e');
+      }
+    }
+
+    // Update state with proprietaire information
+    if (mounted) {
+      setState(() {
+        _proprietaires = proprietaires;
+      });
+    }
+  }
+
   // Navigation to pending payments removed
+
+  // Get proprietaire name from ID
+  String _getProprietaireName(String proprietaireId) {
+    if (_proprietaires.containsKey(proprietaireId)) {
+      final proprietaire = _proprietaires[proprietaireId]!;
+      return '${proprietaire.firstName} ${proprietaire.lastName}';
+    }
+    return proprietaireId; // Fallback to ID if name not found
+  }
 
   Future<void> _confirmPayment(Payment payment) async {
     // Show confirmation dialog
@@ -371,7 +415,7 @@ class _AllPaymentsPageState extends State<AllPaymentsPage> {
                                                   Icon(Icons.person, size: 16, color: Colors.blue),
                                                   SizedBox(width: 4),
                                                   Text(
-                                                    'Propriétaire: ${payment.proprietaireId}',
+                                                    'Propriétaire: ${_getProprietaireName(payment.proprietaireId)}',
                                                     style: TextStyle(fontWeight: FontWeight.bold),
                                                   ),
                                                 ],

@@ -6,7 +6,6 @@ import '../models/charge_model.dart';
 class ChargeService {
   static const String baseUrl = 'http://localhost:3000/api';
 
-  // Create a new charge (syndic only)
   Future<Map<String, dynamic>> createCharge(
     Map<String, dynamic> chargeData,
     String token,
@@ -53,7 +52,6 @@ class ChargeService {
     }
   }
 
-  // Get all charges (syndic only)
   Future<Map<String, dynamic>> getAllCharges(String token) async {
     try {
       debugPrint('Fetching all charges with token: $token');
@@ -98,7 +96,6 @@ class ChargeService {
     }
   }
 
-  // Get all charges for a proprietaire
   Future<Map<String, dynamic>> getChargesForProprietaire(
     String proprietaireId,
     String token,

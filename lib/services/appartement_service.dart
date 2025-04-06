@@ -6,11 +6,10 @@ import '../models/appartement_model.dart';
 class AppartementService {
   static const String baseUrl = 'http://localhost:3000/api';
 
-  // Get all appartements
   Future<Map<String, dynamic>> getAllAppartements(String token) async {
     try {
       debugPrint('Fetching appartements with token: $token');
-      debugPrint('Authorization header: Bearer $token'); // With Bearer prefix
+      debugPrint('Authorization header: Bearer $token'); 
 
       final response = await http.get(
         Uri.parse('$baseUrl/appartements'),
@@ -31,8 +30,6 @@ class AppartementService {
             .map((json) => Appartement.fromJson(json))
             .toList();
 
-        // Filter to only show available apartments if needed
-        // final availableAppartements = appartements.where((apt) => apt.isAvailable).toList();
 
         return {
           'success': true,

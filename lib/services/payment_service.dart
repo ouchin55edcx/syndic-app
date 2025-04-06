@@ -7,7 +7,6 @@ import '../models/charge_model.dart';
 class PaymentService {
   static const String baseUrl = 'http://localhost:3000/api';
 
-  // Make a payment (proprietaire)
   Future<Map<String, dynamic>> makePayment(
     Map<String, dynamic> paymentData,
     String token,
@@ -54,7 +53,6 @@ class PaymentService {
     }
   }
 
-  // Confirm payment (syndic only)
   Future<Map<String, dynamic>> confirmPayment(
     String paymentId,
     Map<String, dynamic> confirmationData,
@@ -65,7 +63,6 @@ class PaymentService {
       debugPrint('Authorization header: Bearer $token');
       debugPrint('Request data: ${jsonEncode(confirmationData)}');
 
-      // Using the exact endpoint format as specified
       final response = await http.put(
         Uri.parse('$baseUrl/payments/$paymentId/confirm'),
         headers: {
@@ -111,7 +108,6 @@ class PaymentService {
     }
   }
 
-  // Reject payment (syndic only)
   Future<Map<String, dynamic>> rejectPayment(
     String paymentId,
     Map<String, dynamic> rejectionData,
@@ -159,7 +155,6 @@ class PaymentService {
     }
   }
 
-  // Get payment history for a proprietaire
   Future<Map<String, dynamic>> getPaymentHistory(
     String proprietaireId,
     String token,
@@ -187,7 +182,6 @@ class PaymentService {
             .map((json) => Payment.fromJson(json))
             .toList();
 
-        // Process charges data if available
         List<Charge> charges = [];
         if (responseData['charges'] != null) {
           try {

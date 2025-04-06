@@ -31,19 +31,19 @@ class _GestionSyndicScreenState extends State<GestionSyndicScreen> {
                 color: Colors.white,
               ),
             ),
-            Spacer(), // Ajoute un espace flexible entre le titre et les icônes
-            SizedBox(width: 20), // Ajoute un petit espace entre les icônes
+            Spacer(), 
+            SizedBox(width: 20), 
             GestureDetector(
               onTap: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (context) => NotificationsPage(),
-                  ), // Redirige vers NotificationsPage
+                  ), 
                 );
               },
               child:
-                  NotificationBell(), // Icône de notification avec 3 notifications
+                  NotificationBell(), 
             ),
             GestureDetector(
               onTap: () {
@@ -52,7 +52,7 @@ class _GestionSyndicScreenState extends State<GestionSyndicScreen> {
                   MaterialPageRoute(builder: (context) => UserProfilePage()),
                 );
               },
-              child: UserAvatar(), // Utilisation de textSize de 18
+              child: UserAvatar(), 
             ),
           ],
         ),

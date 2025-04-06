@@ -43,11 +43,10 @@ class _HomeScreenState extends State<HomeScreen> {
         SettingsPage(),
       ];
     } else {
-      // For proprietaires, prioritize financial management
       _pages = [
         DashboardPage(),
-        ChargesListPage(),      // Charges list with payment options
-        PaymentHistoryPage(),   // Payment history
+        ChargesListPage(),      
+        PaymentHistoryPage(),   
         ReunionsListPage(),
         SettingsPage(),
       ];
@@ -57,7 +56,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _pages[_currentIndex], // Affichage de la page sélectionnée
+      body: _pages[_currentIndex], 
       bottomNavigationBar: CustomBottomNavBar(
         currentIndex: _currentIndex,
         onTap: (index) => setState(() => _currentIndex = index),

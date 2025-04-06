@@ -7,14 +7,13 @@ import '../models/proprietaire_profile_model.dart';
 class ProprietaireService {
   static const String baseUrl = 'http://localhost:3000/api';
 
-  // Create a new proprietaire (only for syndic)
   Future<Map<String, dynamic>> createProprietaire(
     Map<String, dynamic> proprietaireData,
     String token,
   ) async {
     try {
       debugPrint('Creating proprietaire with token: $token');
-      debugPrint('Authorization header: Bearer $token'); // With Bearer prefix
+      debugPrint('Authorization header: Bearer $token');
       debugPrint('Request data: ${jsonEncode(proprietaireData)}');
 
       final response = await http.post(
@@ -52,11 +51,10 @@ class ProprietaireService {
     }
   }
 
-  // Get all proprietaires for the syndic
   Future<Map<String, dynamic>> getMyProprietaires(String token) async {
     try {
       debugPrint('Fetching proprietaires with token: $token');
-      debugPrint('Authorization header: Bearer $token'); // With Bearer prefix
+      debugPrint('Authorization header: Bearer $token');
 
       final response = await http.get(
         Uri.parse('$baseUrl/proprietaires/my-proprietaires'),
@@ -91,7 +89,6 @@ class ProprietaireService {
     }
   }
 
-  // Get proprietaire profile
   Future<Map<String, dynamic>> getProprietaireProfile(String token) async {
     try {
       debugPrint('Fetching proprietaire profile with token: $token');
@@ -173,6 +170,47 @@ class ProprietaireService {
       }
     } catch (e) {
       debugPrint('Update proprietaire profile error: $e');
+      return {
+        'success': false,
+        'message': 'An error occurred. Please try again: $e',
+      };
+    }
+  }
+
+  // Get proprietaire by ID
+  Future<Map<String, dynamic>> getProprietaireById(String proprietaireId, String token) async {
+    try {
+      debugPrint('Fetching proprietaire $proprietaireId with token: $token');
+      debugPrint('Authorization header: Bearer $token');
+
+      final response = await http.get(
+        Uri.parse('$baseUrl/proprietaires/$proprietaireId'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      debugPrint('Response status code: ${response.statusCode}');
+      debugPrint('Response body: ${response.body}');
+
+      final Map<String, dynamic> responseData = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        return {
+          'success': true,
+          'proprietaire': responseData['proprietaire'] != null
+              ? ProprietaireProfile.fromJson(responseData['proprietaire'])
+              : null,
+        };
+      } else {
+        return {
+          'success': false,
+          'message': responseData['message'] ?? 'Failed to fetch proprietaire',
+        };
+      }
+    } catch (e) {
+      debugPrint('Get proprietaire by ID error: $e');
       return {
         'success': false,
         'message': 'An error occurred. Please try again: $e',

@@ -6,7 +6,6 @@ import '../models/notification_model.dart';
 class NotificationService {
   static const String baseUrl = 'http://localhost:3000/api';
 
-  // Get all notifications for the current user
   Future<Map<String, dynamic>> getNotifications(String token) async {
     try {
       debugPrint('Fetching notifications with token: $token');

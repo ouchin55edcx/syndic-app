@@ -6,12 +6,10 @@ import '../models/user_model.dart';
 class AuthService {
   static const String baseUrl = 'http://localhost:3000/api';
 
-  // Login types
   static const String SYNDIC = 'syndic';
   static const String PROPRIETAIRE = 'proprietaire';
 
 
-  // Generic login method that can be used for both syndic and proprietaire
   Future<Map<String, dynamic>> login(String userType, String email, String password) async {
     try {
       debugPrint('Logging in as $userType with email: $email');

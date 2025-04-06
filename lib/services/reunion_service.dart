@@ -7,7 +7,6 @@ import '../models/reunion_model.dart';
 class ReunionService {
   static const String baseUrl = 'http://localhost:3000/api';
 
-  // Create a new reunion
   Future<Map<String, dynamic>> createReunion(
     Map<String, dynamic> reunionData,
     String token,
