@@ -61,6 +61,54 @@ class _PendingPaymentsPageState extends State<PendingPaymentsPage> {
   }
 
   Future<void> _confirmPayment(Payment payment) async {
+    // Show confirmation dialog
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Confirmer le paiement'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Voulez-vous confirmer ce paiement?'),
+              SizedBox(height: 16),
+              Text('Montant: ${Payment.formatCurrency(payment.montant)}', style: TextStyle(fontWeight: FontWeight.bold)),
+              Text('Méthode: ${payment.methodePaiement}'),
+              Text('Référence: ${payment.reference}'),
+              SizedBox(height: 8),
+              TextField(
+                decoration: InputDecoration(
+                  labelText: 'Notes (optionnel)',
+                  border: OutlineInputBorder(),
+                ),
+                maxLines: 2,
+                onChanged: (value) => _confirmationNotes = value,
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text('Annuler'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                Navigator.of(context).pop();
+                await _processPaymentConfirmation(payment);
+              },
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+              child: Text('Confirmer', style: TextStyle(color: Colors.white)),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  String _confirmationNotes = 'Paiement vérifié et confirmé par le syndic';
+
+  Future<void> _processPaymentConfirmation(Payment payment) async {
     setState(() {
       _isLoading = true;
     });
@@ -71,7 +119,7 @@ class _PendingPaymentsPageState extends State<PendingPaymentsPage> {
     if (token != null) {
       try {
         final confirmationData = {
-          'notes': 'Paiement vérifié et confirmé par le syndic',
+          'notes': _confirmationNotes,
         };
 
         final result = await _paymentService.confirmPayment(
@@ -85,6 +133,7 @@ class _PendingPaymentsPageState extends State<PendingPaymentsPage> {
             SnackBar(
               content: Text(result['message'] ?? 'Paiement confirmé avec succès'),
               backgroundColor: Colors.green,
+              duration: Duration(seconds: 3),
             ),
           );
           _loadPendingPayments(); // Reload the list
@@ -93,6 +142,7 @@ class _PendingPaymentsPageState extends State<PendingPaymentsPage> {
             SnackBar(
               content: Text(result['message'] ?? 'Échec de la confirmation du paiement'),
               backgroundColor: Colors.red,
+              duration: Duration(seconds: 3),
             ),
           );
         }
@@ -101,6 +151,7 @@ class _PendingPaymentsPageState extends State<PendingPaymentsPage> {
           SnackBar(
             content: Text('Une erreur est survenue: $e'),
             backgroundColor: Colors.red,
+            duration: Duration(seconds: 3),
           ),
         );
       }
@@ -112,6 +163,63 @@ class _PendingPaymentsPageState extends State<PendingPaymentsPage> {
   }
 
   Future<void> _rejectPayment(Payment payment) async {
+    // Show confirmation dialog
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Rejeter le paiement'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Voulez-vous rejeter ce paiement?'),
+              SizedBox(height: 16),
+              Text('Montant: ${Payment.formatCurrency(payment.montant)}', style: TextStyle(fontWeight: FontWeight.bold)),
+              Text('Méthode: ${payment.methodePaiement}'),
+              Text('Référence: ${payment.reference}'),
+              SizedBox(height: 8),
+              TextField(
+                decoration: InputDecoration(
+                  labelText: 'Motif du rejet (obligatoire)',
+                  border: OutlineInputBorder(),
+                ),
+                maxLines: 2,
+                onChanged: (value) => _rejectionNotes = value,
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text('Annuler'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                if (_rejectionNotes.trim().isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Veuillez indiquer un motif de rejet'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                  return;
+                }
+                Navigator.of(context).pop();
+                await _processPaymentRejection(payment);
+              },
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+              child: Text('Rejeter', style: TextStyle(color: Colors.white)),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  String _rejectionNotes = 'Paiement rejeté par le syndic';
+
+  Future<void> _processPaymentRejection(Payment payment) async {
     setState(() {
       _isLoading = true;
     });
@@ -122,7 +230,7 @@ class _PendingPaymentsPageState extends State<PendingPaymentsPage> {
     if (token != null) {
       try {
         final rejectionData = {
-          'notes': 'Paiement rejeté par le syndic',
+          'notes': _rejectionNotes,
         };
 
         final result = await _paymentService.rejectPayment(
@@ -136,6 +244,7 @@ class _PendingPaymentsPageState extends State<PendingPaymentsPage> {
             SnackBar(
               content: Text(result['message'] ?? 'Paiement rejeté avec succès'),
               backgroundColor: Colors.orange,
+              duration: Duration(seconds: 3),
             ),
           );
           _loadPendingPayments(); // Reload the list
@@ -144,6 +253,7 @@ class _PendingPaymentsPageState extends State<PendingPaymentsPage> {
             SnackBar(
               content: Text(result['message'] ?? 'Échec du rejet du paiement'),
               backgroundColor: Colors.red,
+              duration: Duration(seconds: 3),
             ),
           );
         }
@@ -152,6 +262,7 @@ class _PendingPaymentsPageState extends State<PendingPaymentsPage> {
           SnackBar(
             content: Text('Une erreur est survenue: $e'),
             backgroundColor: Colors.red,
+            duration: Duration(seconds: 3),
           ),
         );
       }
@@ -378,9 +489,10 @@ class _PendingPaymentsPageState extends State<PendingPaymentsPage> {
                                             style: ElevatedButton.styleFrom(
                                               backgroundColor: Colors.green,
                                               foregroundColor: Colors.white,
+                                              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                                             ),
                                           ),
-                                          SizedBox(width: 8),
+                                          SizedBox(width: 12),
                                           ElevatedButton.icon(
                                             onPressed: () => _rejectPayment(payment),
                                             icon: Icon(Icons.cancel),
@@ -388,6 +500,7 @@ class _PendingPaymentsPageState extends State<PendingPaymentsPage> {
                                             style: ElevatedButton.styleFrom(
                                               backgroundColor: Colors.red,
                                               foregroundColor: Colors.white,
+                                              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                                             ),
                                           ),
                                         ],

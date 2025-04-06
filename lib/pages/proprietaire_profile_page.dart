@@ -11,6 +11,7 @@ import '../widgets/NotificationBell.dart';
 import 'charges_list_page.dart';
 import 'payment_history_page.dart';
 import 'home_screen.dart';
+import 'LoginPage.dart';
 
 class ProprietaireProfilePage extends StatefulWidget {
   @override
@@ -91,6 +92,40 @@ class _ProprietaireProfilePageState extends State<ProprietaireProfilePage> {
     if (result == true) {
       _loadProfile(); // Reload profile after update
     }
+  }
+
+  void _logout() {
+    // Show confirmation dialog
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Déconnexion'),
+          content: Text('Êtes-vous sûr de vouloir vous déconnecter?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(), // Cancel
+              child: Text('Annuler'),
+            ),
+            TextButton(
+              onPressed: () {
+                // Clear user data from provider
+                Provider.of<UserProvider>(context, listen: false).clearUser();
+
+                // Navigate to login page
+                Navigator.of(context).pop(); // Close dialog
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(builder: (context) => LoginPage()),
+                  (route) => false, // Remove all previous routes
+                );
+              },
+              child: Text('Déconnexion', style: TextStyle(color: Colors.red)),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -244,18 +279,36 @@ class _ProprietaireProfilePageState extends State<ProprietaireProfilePage> {
                             SizedBox(height: 20),
                             _buildFinancialManagementCard(),
                             SizedBox(height: 30),
-                            ElevatedButton.icon(
-                              onPressed: _navigateToEditProfile,
-                              icon: Icon(Icons.edit),
-                              label: Text("Modifier le profil"),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color.fromARGB(255, 75, 160, 173),
-                                foregroundColor: Colors.white,
-                                padding: EdgeInsets.symmetric(horizontal: 30, vertical: 12),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
+                            Column(
+                              children: [
+                                ElevatedButton.icon(
+                                  onPressed: _navigateToEditProfile,
+                                  icon: Icon(Icons.edit),
+                                  label: Text("Modifier le profil"),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: const Color.fromARGB(255, 75, 160, 173),
+                                    foregroundColor: Colors.white,
+                                    padding: EdgeInsets.symmetric(horizontal: 30, vertical: 12),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                  ),
                                 ),
-                              ),
+                                SizedBox(height: 16),
+                                ElevatedButton.icon(
+                                  onPressed: _logout,
+                                  icon: Icon(Icons.logout),
+                                  label: Text("Déconnexion"),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.red,
+                                    foregroundColor: Colors.white,
+                                    padding: EdgeInsets.symmetric(horizontal: 30, vertical: 12),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ],
                         ),
