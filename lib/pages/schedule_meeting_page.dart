@@ -2,17 +2,23 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'meeting_provider.dart';
-import '../widgets/NotificationBell.dart'; 
+import '../widgets/NotificationBell.dart';
 import 'notifications_page.dart';
 import '../widgets/user_avatar.dart';
 import 'UserProfilePage.dart';
 import 'MeetingListPage.dart';
+import 'create_reunion_page.dart';
+import 'reunions_list_page.dart';
+import '../providers/user_provider.dart';
 
 class ScheduleMeetingPage extends StatelessWidget {
   const ScheduleMeetingPage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final userProvider = Provider.of<UserProvider>(context);
+    final bool isSyndic = userProvider.isSyndic;
+
     return Scaffold(
       backgroundColor: Colors.grey[200],
       appBar: AppBar(
@@ -145,27 +151,57 @@ class ScheduleMeetingPage extends StatelessWidget {
             Row(
               children: [
                 Expanded(
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color.fromARGB(255, 75, 160, 173),
-                      padding: EdgeInsets.symmetric(vertical: 15),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                    ),
-                    onPressed: () {
-                      final provider = context.read<MeetingProvider>();
-                      provider.saveMeeting(context);
-                      provider.clearFields();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text("Réunion programmée avec succès"),
-                          backgroundColor: const Color.fromARGB(255, 2, 180, 8),
+                  child: Column(
+                    children: [
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color.fromARGB(255, 75, 160, 173),
+                          padding: EdgeInsets.symmetric(vertical: 15),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                         ),
-                      );
-                    },
-                    child: Text(
-                      "Enregistrer",
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
-                    ),
+                        onPressed: () {
+                          // If user is syndic, use the API-based reunion creation
+                          if (isSyndic) {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => CreateReunionPage()),
+                            );
+                          } else {
+                            // Use the original local meeting creation for non-syndic users
+                            final provider = context.read<MeetingProvider>();
+                            provider.saveMeeting(context);
+                            provider.clearFields();
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text("Réunion programmée avec succès"),
+                                backgroundColor: const Color.fromARGB(255, 2, 180, 8),
+                              ),
+                            );
+                          }
+                        },
+                        child: Text(
+                          isSyndic ? "Créer une réunion" : "Enregistrer",
+                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+                        ),
+                      ),
+                      if (isSyndic)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 10.0),
+                          child: TextButton.icon(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) => ReunionsListPage()),
+                              );
+                            },
+                            icon: Icon(Icons.list),
+                            label: Text("Voir toutes les réunions"),
+                            style: TextButton.styleFrom(
+                              foregroundColor: const Color.fromARGB(255, 75, 160, 173),
+                            ),
+                          ),
+                        ),
+                    ],
                   ),
                 ),
                 SizedBox(width: 10),

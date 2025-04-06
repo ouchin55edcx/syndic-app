@@ -6,6 +6,8 @@ import '../providers/user_provider.dart';
 import '../services/proprietaire_service.dart';
 import '../models/proprietaire_profile_model.dart';
 import 'edit_proprietaire_profile_page.dart';
+import 'notifications_page.dart';
+import '../widgets/NotificationBell.dart';
 
 class ProprietaireProfilePage extends StatefulWidget {
   @override
@@ -99,6 +101,43 @@ class _ProprietaireProfilePageState extends State<ProprietaireProfilePage> {
         centerTitle: true,
         backgroundColor: const Color.fromARGB(255, 64, 66, 69),
         iconTheme: IconThemeData(color: Colors.white),
+        actions: [
+          // Notification bell icon
+          GestureDetector(
+            onTap: () => Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => NotificationsPage()),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.only(right: 16.0),
+              child: NotificationBell(),
+            ),
+          ),
+        ],
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: 0, // Profile page is selected
+        backgroundColor: const Color.fromARGB(255, 64, 66, 69),
+        selectedItemColor: const Color.fromARGB(255, 75, 160, 173),
+        unselectedItemColor: Colors.grey,
+        items: [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person),
+            label: 'Profil',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.notifications),
+            label: 'Notifications',
+          ),
+        ],
+        onTap: (index) {
+          if (index == 1) { // Notifications
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => NotificationsPage()),
+            );
+          }
+        },
       ),
       body: _isLoading
           ? Center(child: CircularProgressIndicator())
@@ -218,9 +257,9 @@ class _ProprietaireProfilePageState extends State<ProprietaireProfilePage> {
             SizedBox(height: 15),
             _buildInfoRow(Icons.email, "Email", _profile!.email),
             SizedBox(height: 15),
-            _buildInfoRow(Icons.calendar_today, "Date d'acquisition", 
-                _profile!.ownershipDate != null 
-                    ? _formatDate(_profile!.ownershipDate!) 
+            _buildInfoRow(Icons.calendar_today, "Date d'acquisition",
+                _profile!.ownershipDate != null
+                    ? _formatDate(_profile!.ownershipDate!)
                     : "Non spécifiée"),
           ],
         ),
