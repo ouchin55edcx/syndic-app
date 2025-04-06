@@ -36,7 +36,6 @@ class _HomeScreenState extends State<HomeScreen> {
     if (isSyndic) {
       _pages = [
         DashboardPage(),
-        ScheduleMeetingPage(),
         OwnersListPage(),
         ChargesListPage(),
         AllPaymentsPage(),
