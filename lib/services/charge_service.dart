@@ -126,8 +126,22 @@ class ChargeService {
             .map((json) => Charge.fromJson(json))
             .toList();
 
+        // Process chargesByAppartement data if available
+        Map<String, dynamic> chargesByAppartement = {};
+        if (responseData['chargesByAppartement'] != null) {
+          chargesByAppartement = responseData['chargesByAppartement'];
+          debugPrint('Charges by appartement: ${chargesByAppartement.keys.length} appartements');
+        }
+
         return {
           'success': true,
+          'proprietaireId': responseData['proprietaireId'] ?? '',
+          'proprietaireName': responseData['proprietaireName'] ?? '',
+          'totalCharges': responseData['totalCharges'] ?? 0.0,
+          'totalPaid': responseData['totalPaid'] ?? 0.0,
+          'totalRemaining': responseData['totalRemaining'] ?? 0.0,
+          'count': responseData['count'] ?? charges.length,
+          'chargesByAppartement': chargesByAppartement,
           'charges': charges,
         };
       } else {

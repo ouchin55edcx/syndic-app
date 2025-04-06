@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
 import '../models/payment_model.dart';
+import '../models/charge_model.dart';
 
 class PaymentService {
   static const String baseUrl = 'http://localhost:3000/api';
@@ -101,6 +102,54 @@ class PaymentService {
     }
   }
 
+  // Reject payment (syndic only)
+  Future<Map<String, dynamic>> rejectPayment(
+    String paymentId,
+    Map<String, dynamic> rejectionData,
+    String token,
+  ) async {
+    try {
+      debugPrint('Rejecting payment $paymentId with token: $token');
+      debugPrint('Authorization header: Bearer $token');
+      debugPrint('Request data: ${jsonEncode(rejectionData)}');
+
+      final response = await http.put(
+        Uri.parse('$baseUrl/payments/$paymentId/reject'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode(rejectionData),
+      );
+
+      debugPrint('Response status code: ${response.statusCode}');
+      debugPrint('Response body: ${response.body}');
+
+      final Map<String, dynamic> responseData = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        return {
+          'success': true,
+          'message': responseData['message'] ?? 'Paiement rejeté avec succès',
+          'payment': responseData['payment'] != null
+              ? Payment.fromJson(responseData['payment'])
+              : null,
+        };
+      } else {
+        return {
+          'success': false,
+          'message': responseData['message'] ?? 'Échec du rejet du paiement',
+        };
+      }
+    } catch (e) {
+      debugPrint('Reject payment error: $e');
+      return {
+        'success': false,
+        'message': 'Une erreur est survenue. Veuillez réessayer: $e',
+      };
+    }
+  }
+
   // Get payment history for a proprietaire
   Future<Map<String, dynamic>> getPaymentHistory(
     String proprietaireId,
@@ -129,10 +178,17 @@ class PaymentService {
             .map((json) => Payment.fromJson(json))
             .toList();
 
+        // Process charges data if available
+        final List<dynamic> chargesJson = responseData['charges'] ?? [];
+        final List<Charge> charges = chargesJson
+            .map((json) => Charge.fromJson(json))
+            .toList();
+
         return {
           'success': true,
           'proprietaire': responseData['proprietaire'],
           'payments': payments,
+          'charges': charges,
           'totalPaid': responseData['totalPaid'] ?? 0.0,
           'totalDue': responseData['totalDue'] ?? 0.0,
           'startDate': responseData['startDate'],

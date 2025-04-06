@@ -48,9 +48,9 @@ class CustomBottomNavBar extends StatelessWidget {
             : [
                 // Proprietaire navigation items
                 SalomonBottomBarItem(icon: Icon(Icons.home), title: Text("Accueil"), selectedColor: Colors.blue),
+                SalomonBottomBarItem(icon: Icon(Icons.euro), title: Text("Charges"), selectedColor: Colors.green),
+                SalomonBottomBarItem(icon: Icon(Icons.receipt), title: Text("Paiements"), selectedColor: Colors.green),
                 SalomonBottomBarItem(icon: Icon(Icons.chat_bubble), title: Text("Messages"), selectedColor: Colors.blue),
-                SalomonBottomBarItem(icon: Icon(Icons.euro), title: Text("Charges"), selectedColor: Colors.blue),
-                SalomonBottomBarItem(icon: Icon(Icons.receipt), title: Text("Paiements"), selectedColor: Colors.blue),
                 SalomonBottomBarItem(icon: Icon(Icons.groups), title: Text("Réunions"), selectedColor: Colors.blue),
                 SalomonBottomBarItem(icon: Icon(Icons.settings), title: Text("Paramètres"), selectedColor: Colors.blue),
               ],

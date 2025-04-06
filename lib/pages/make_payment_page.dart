@@ -17,14 +17,14 @@ class MakePaymentPage extends StatefulWidget {
 class _MakePaymentPageState extends State<MakePaymentPage> {
   final _formKey = GlobalKey<FormState>();
   final PaymentService _paymentService = PaymentService();
-  
+
   final TextEditingController _montantController = TextEditingController();
   final TextEditingController _referenceController = TextEditingController();
   final TextEditingController _notesController = TextEditingController();
-  
+
   String? _selectedMethode;
   bool _isPartialPayment = false;
-  
+
   bool _isLoading = false;
   String _errorMessage = '';
   String _successMessage = '';
@@ -70,7 +70,7 @@ class _MakePaymentPageState extends State<MakePaymentPage> {
       try {
         // Parse montant to double
         double montant = double.tryParse(_montantController.text.replaceAll(',', '.')) ?? 0.0;
-        
+
         final paymentData = {
           'chargeId': widget.charge.id,
           'montant': montant,
@@ -87,7 +87,7 @@ class _MakePaymentPageState extends State<MakePaymentPage> {
         if (result['success']) {
           setState(() {
             _successMessage = result['message'] ?? 'Paiement enregistré avec succès';
-            
+
             // Clear form
             _montantController.clear();
             _referenceController.clear();
@@ -95,7 +95,7 @@ class _MakePaymentPageState extends State<MakePaymentPage> {
             _selectedMethode = null;
             _isPartialPayment = false;
           });
-          
+
           // Wait a moment to show success message before returning
           Future.delayed(Duration(seconds: 2), () {
             Navigator.pop(context, true); // Return true to indicate success
@@ -126,7 +126,7 @@ class _MakePaymentPageState extends State<MakePaymentPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          "Effectuer un paiement",
+          "Paiement de charge",
           style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
         ),
         centerTitle: true,
@@ -206,9 +206,9 @@ class _MakePaymentPageState extends State<MakePaymentPage> {
                     ),
                   ),
                 ),
-                
+
                 SizedBox(height: 20),
-                
+
                 if (_errorMessage.isNotEmpty)
                   Container(
                     padding: EdgeInsets.all(10),
@@ -222,7 +222,7 @@ class _MakePaymentPageState extends State<MakePaymentPage> {
                       style: TextStyle(color: Colors.red),
                     ),
                   ),
-                
+
                 if (_successMessage.isNotEmpty)
                   Container(
                     padding: EdgeInsets.all(10),
@@ -236,7 +236,7 @@ class _MakePaymentPageState extends State<MakePaymentPage> {
                       style: TextStyle(color: Colors.green),
                     ),
                   ),
-                
+
                 Text(
                   "Informations de paiement",
                   style: TextStyle(
@@ -245,7 +245,7 @@ class _MakePaymentPageState extends State<MakePaymentPage> {
                   ),
                 ),
                 SizedBox(height: 20),
-                
+
                 // Partial payment checkbox
                 CheckboxListTile(
                   title: Text("Paiement partiel"),
@@ -261,7 +261,7 @@ class _MakePaymentPageState extends State<MakePaymentPage> {
                   controlAffinity: ListTileControlAffinity.leading,
                 ),
                 SizedBox(height: 15),
-                
+
                 TextFormField(
                   controller: _montantController,
                   decoration: InputDecoration(
@@ -292,7 +292,7 @@ class _MakePaymentPageState extends State<MakePaymentPage> {
                   },
                 ),
                 SizedBox(height: 15),
-                
+
                 DropdownButtonFormField<String>(
                   value: _selectedMethode,
                   decoration: InputDecoration(
@@ -321,7 +321,7 @@ class _MakePaymentPageState extends State<MakePaymentPage> {
                   },
                 ),
                 SizedBox(height: 15),
-                
+
                 TextFormField(
                   controller: _referenceController,
                   decoration: InputDecoration(
@@ -340,7 +340,7 @@ class _MakePaymentPageState extends State<MakePaymentPage> {
                   },
                 ),
                 SizedBox(height: 15),
-                
+
                 TextFormField(
                   controller: _notesController,
                   decoration: InputDecoration(
@@ -354,12 +354,12 @@ class _MakePaymentPageState extends State<MakePaymentPage> {
                   maxLines: 3,
                 ),
                 SizedBox(height: 30),
-                
+
                 Center(
                   child: ElevatedButton(
                     onPressed: _isLoading ? null : _makePayment,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color.fromARGB(255, 75, 160, 173),
+                      backgroundColor: Colors.green,
                       foregroundColor: Colors.white,
                       padding: EdgeInsets.symmetric(horizontal: 40, vertical: 15),
                       shape: RoundedRectangleBorder(
@@ -376,8 +376,8 @@ class _MakePaymentPageState extends State<MakePaymentPage> {
                             ),
                           )
                         : Text(
-                            "Effectuer le paiement",
-                            style: TextStyle(fontSize: 16),
+                            "Confirmer le paiement",
+                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                           ),
                   ),
                 ),

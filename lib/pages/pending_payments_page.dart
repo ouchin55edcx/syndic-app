@@ -111,6 +111,57 @@ class _PendingPaymentsPageState extends State<PendingPaymentsPage> {
     });
   }
 
+  Future<void> _rejectPayment(Payment payment) async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final token = userProvider.token;
+
+    if (token != null) {
+      try {
+        final rejectionData = {
+          'notes': 'Paiement rejeté par le syndic',
+        };
+
+        final result = await _paymentService.rejectPayment(
+          payment.id,
+          rejectionData,
+          token,
+        );
+
+        if (result['success']) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(result['message'] ?? 'Paiement rejeté avec succès'),
+              backgroundColor: Colors.orange,
+            ),
+          );
+          _loadPendingPayments(); // Reload the list
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(result['message'] ?? 'Échec du rejet du paiement'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Une erreur est survenue: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+
+    setState(() {
+      _isLoading = false;
+    });
+  }
+
   String _formatDateTime(String dateTimeString) {
     try {
       final dateTime = DateTime.parse(dateTimeString);
@@ -169,7 +220,7 @@ class _PendingPaymentsPageState extends State<PendingPaymentsPage> {
                         itemCount: _payments.length,
                         itemBuilder: (context, index) {
                           final payment = _payments[index];
-                          
+
                           return Card(
                             margin: EdgeInsets.only(bottom: 16),
                             elevation: 4,
@@ -201,7 +252,7 @@ class _PendingPaymentsPageState extends State<PendingPaymentsPage> {
                                       SizedBox(width: 8),
                                       Expanded(
                                         child: Text(
-                                          payment.charge != null 
+                                          payment.charge != null
                                               ? payment.charge!['titre'] ?? 'Paiement en attente'
                                               : 'Paiement en attente',
                                           style: TextStyle(
@@ -323,9 +374,19 @@ class _PendingPaymentsPageState extends State<PendingPaymentsPage> {
                                           ElevatedButton.icon(
                                             onPressed: () => _confirmPayment(payment),
                                             icon: Icon(Icons.check_circle),
-                                            label: Text('Confirmer le paiement'),
+                                            label: Text('Confirmer'),
                                             style: ElevatedButton.styleFrom(
                                               backgroundColor: Colors.green,
+                                              foregroundColor: Colors.white,
+                                            ),
+                                          ),
+                                          SizedBox(width: 8),
+                                          ElevatedButton.icon(
+                                            onPressed: () => _rejectPayment(payment),
+                                            icon: Icon(Icons.cancel),
+                                            label: Text('Rejeter'),
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor: Colors.red,
                                               foregroundColor: Colors.white,
                                             ),
                                           ),

@@ -45,11 +45,12 @@ class _HomeScreenState extends State<HomeScreen> {
         SettingsPage(),
       ];
     } else {
+      // For proprietaires, prioritize financial management
       _pages = [
         DashboardPage(),
+        ChargesListPage(),      // Charges list with payment options
+        PaymentHistoryPage(),   // Payment history
         MessagesPage(),
-        ChargesListPage(),
-        PaymentHistoryPage(),
         ReunionsListPage(),
         SettingsPage(),
       ];

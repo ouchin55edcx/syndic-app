@@ -5,6 +5,9 @@ import '../services/notification_service.dart';
 import '../services/reunion_service.dart';
 import '../models/notification_model.dart' as app_notification;
 import 'proprietaire_profile_page.dart';
+import 'charges_list_page.dart';
+import 'payment_history_page.dart';
+import 'home_screen.dart';
 // import 'package:url_launcher/url_launcher_string.dart';
 
 class NotificationsPage extends StatefulWidget {
@@ -189,14 +192,23 @@ class _NotificationsPageState extends State<NotificationsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 1, // Notifications page is selected
+        currentIndex: 3, // Notifications page is selected
         backgroundColor: const Color.fromARGB(255, 64, 66, 69),
         selectedItemColor: const Color.fromARGB(255, 75, 160, 173),
         unselectedItemColor: Colors.grey,
+        type: BottomNavigationBarType.fixed, // Important for more than 3 items
         items: [
           BottomNavigationBarItem(
             icon: Icon(Icons.person),
             label: 'Profil',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.euro),
+            label: 'Charges',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.receipt),
+            label: 'Paiements',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.notifications),
@@ -204,11 +216,27 @@ class _NotificationsPageState extends State<NotificationsPage> {
           ),
         ],
         onTap: (index) {
-          if (index == 0) { // Profile
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => ProprietaireProfilePage()),
-            );
+          switch (index) {
+            case 0: // Profile
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => ProprietaireProfilePage()),
+              );
+              break;
+            case 1: // Charges
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => ChargesListPage()),
+              );
+              break;
+            case 2: // Payments
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => PaymentHistoryPage()),
+              );
+              break;
+            case 3: // Notifications - already here
+              break;
           }
         },
       ),

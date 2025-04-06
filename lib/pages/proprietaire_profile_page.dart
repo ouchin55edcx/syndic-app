@@ -8,6 +8,9 @@ import '../models/proprietaire_profile_model.dart';
 import 'edit_proprietaire_profile_page.dart';
 import 'notifications_page.dart';
 import '../widgets/NotificationBell.dart';
+import 'charges_list_page.dart';
+import 'payment_history_page.dart';
+import 'home_screen.dart';
 
 class ProprietaireProfilePage extends StatefulWidget {
   @override
@@ -120,10 +123,19 @@ class _ProprietaireProfilePageState extends State<ProprietaireProfilePage> {
         backgroundColor: const Color.fromARGB(255, 64, 66, 69),
         selectedItemColor: const Color.fromARGB(255, 75, 160, 173),
         unselectedItemColor: Colors.grey,
+        type: BottomNavigationBarType.fixed, // Important for more than 3 items
         items: [
           BottomNavigationBarItem(
             icon: Icon(Icons.person),
             label: 'Profil',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.euro),
+            label: 'Charges',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.receipt),
+            label: 'Paiements',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.notifications),
@@ -131,11 +143,27 @@ class _ProprietaireProfilePageState extends State<ProprietaireProfilePage> {
           ),
         ],
         onTap: (index) {
-          if (index == 1) { // Notifications
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => NotificationsPage()),
-            );
+          switch (index) {
+            case 0: // Profile - already here
+              break;
+            case 1: // Charges
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => ChargesListPage()),
+              );
+              break;
+            case 2: // Payments
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => PaymentHistoryPage()),
+              );
+              break;
+            case 3: // Notifications
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => NotificationsPage()),
+              );
+              break;
           }
         },
       ),
@@ -213,6 +241,8 @@ class _ProprietaireProfilePageState extends State<ProprietaireProfilePage> {
                             _buildInfoCard(),
                             SizedBox(height: 20),
                             _buildApartmentCard(),
+                            SizedBox(height: 20),
+                            _buildFinancialManagementCard(),
                             SizedBox(height: 30),
                             ElevatedButton.icon(
                               onPressed: _navigateToEditProfile,
@@ -340,6 +370,95 @@ class _ProprietaireProfilePageState extends State<ProprietaireProfilePage> {
           ],
         ),
       ],
+    );
+  }
+
+  Widget _buildFinancialManagementCard() {
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(15),
+      ),
+      child: Padding(
+        padding: EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              "Gestion financière",
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            Divider(height: 30),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _buildFinancialButton(
+                  "Mes charges",
+                  Icons.euro,
+                  Colors.green,
+                  () => Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (context) => ChargesListPage()),
+                  ),
+                ),
+                _buildFinancialButton(
+                  "Historique des paiements",
+                  Icons.receipt,
+                  Colors.blue,
+                  () => Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (context) => PaymentHistoryPage()),
+                  ),
+                ),
+                _buildFinancialButton(
+                  "Accueil",
+                  Icons.home,
+                  Colors.orange,
+                  () => Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (context) => HomeScreen()),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFinancialButton(String label, IconData icon, Color color, VoidCallback onTap) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(10),
+      child: Container(
+        width: 90,
+        padding: EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: color.withOpacity(0.3), width: 1),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, color: color, size: 28),
+            SizedBox(height: 8),
+            Text(
+              label,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                color: color,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 

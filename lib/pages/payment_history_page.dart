@@ -4,6 +4,10 @@ import 'package:intl/intl.dart';
 import '../providers/user_provider.dart';
 import '../services/payment_service.dart';
 import '../models/payment_model.dart';
+import '../models/charge_model.dart';
+import 'proprietaire_profile_page.dart';
+import 'charges_list_page.dart';
+import 'notifications_page.dart';
 
 class PaymentHistoryPage extends StatefulWidget {
   @override
@@ -20,6 +24,8 @@ class _PaymentHistoryPageState extends State<PaymentHistoryPage> {
   double _totalDue = 0.0;
   String? _startDate;
   String? _endDate;
+  List<Charge> _charges = [];
+  List<Charge> _relatedCharges = [];
 
   @override
   void initState() {
@@ -42,6 +48,11 @@ class _PaymentHistoryPageState extends State<PaymentHistoryPage> {
         final result = await _paymentService.getPaymentHistory(userId, token);
 
         if (result['success']) {
+          final List<dynamic> chargesJson = result['charges'] ?? [];
+          final List<Charge> charges = chargesJson
+              .map((json) => Charge.fromJson(json))
+              .toList();
+
           setState(() {
             _payments = result['payments'] as List<Payment>;
             _proprietaire = result['proprietaire'];
@@ -53,7 +64,12 @@ class _PaymentHistoryPageState extends State<PaymentHistoryPage> {
                 : (result['totalDue'] ?? 0.0).toDouble();
             _startDate = result['startDate'];
             _endDate = result['endDate'];
+            _relatedCharges = charges;
           });
+
+          // Debug information
+          debugPrint('Loaded ${_payments.length} payments');
+          debugPrint('Loaded ${_relatedCharges.length} related charges');
         } else {
           setState(() {
             _errorMessage = result['message'] ?? 'Échec du chargement de l\'historique des paiements';
@@ -126,6 +142,55 @@ class _PaymentHistoryPageState extends State<PaymentHistoryPage> {
         centerTitle: true,
         backgroundColor: const Color.fromARGB(255, 64, 66, 69),
         iconTheme: IconThemeData(color: Colors.white),
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: 2, // Payments page is selected
+        backgroundColor: const Color.fromARGB(255, 64, 66, 69),
+        selectedItemColor: const Color.fromARGB(255, 75, 160, 173),
+        unselectedItemColor: Colors.grey,
+        type: BottomNavigationBarType.fixed, // Important for more than 3 items
+        items: [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person),
+            label: 'Profil',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.euro),
+            label: 'Charges',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.receipt),
+            label: 'Paiements',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.notifications),
+            label: 'Notifications',
+          ),
+        ],
+        onTap: (index) {
+          switch (index) {
+            case 0: // Profile
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => ProprietaireProfilePage()),
+              );
+              break;
+            case 1: // Charges
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => ChargesListPage()),
+              );
+              break;
+            case 2: // Payments - already here
+              break;
+            case 3: // Notifications
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => NotificationsPage()),
+              );
+              break;
+          }
+        },
       ),
       body: _isLoading
           ? Center(child: CircularProgressIndicator())
@@ -235,185 +300,354 @@ class _PaymentHistoryPageState extends State<PaymentHistoryPage> {
                       ),
                     ),
 
-                    // Payments list
-                    Expanded(
-                      child: _payments.isEmpty
-                          ? Center(
-                              child: Text(
-                                'Aucun paiement à afficher',
-                                style: TextStyle(fontSize: 18, color: Colors.grey[600]),
-                              ),
-                            )
-                          : RefreshIndicator(
-                              onRefresh: _loadPaymentHistory,
-                              child: ListView.builder(
-                                padding: EdgeInsets.all(16),
-                                itemCount: _payments.length,
-                                itemBuilder: (context, index) {
-                                  final payment = _payments[index];
-                                  final bool isConfirmed = payment.statut.toLowerCase() == 'confirmé';
-                                  final bool isPending = payment.statut.toLowerCase() == 'en attente';
-
-                                  return Card(
-                                    margin: EdgeInsets.only(bottom: 16),
-                                    elevation: 2,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                      side: BorderSide(
-                                        color: Color(int.parse(Payment.getStatusColor(payment.statut).substring(1, 7), radix: 16) + 0xFF000000).withOpacity(0.5),
-                                        width: 1,
-                                      ),
-                                    ),
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Container(
-                                          padding: EdgeInsets.all(16),
-                                          decoration: BoxDecoration(
-                                            color: Color(int.parse(Payment.getStatusColor(payment.statut).substring(1, 7), radix: 16) + 0xFF000000).withOpacity(0.1),
-                                            borderRadius: BorderRadius.only(
-                                              topLeft: Radius.circular(12),
-                                              topRight: Radius.circular(12),
-                                            ),
-                                          ),
-                                          child: Row(
-                                            children: [
-                                              Icon(
-                                                isConfirmed ? Icons.check_circle : (isPending ? Icons.timelapse : Icons.warning),
-                                                color: Color(int.parse(Payment.getStatusColor(payment.statut).substring(1, 7), radix: 16) + 0xFF000000),
-                                              ),
-                                              SizedBox(width: 8),
-                                              Expanded(
-                                                child: Text(
-                                                  payment.charge != null
-                                                      ? payment.charge!['titre'] ?? 'Paiement'
-                                                      : 'Paiement',
-                                                  style: TextStyle(
-                                                    fontSize: 16,
-                                                    fontWeight: FontWeight.bold,
-                                                  ),
-                                                ),
-                                              ),
-                                              Container(
-                                                padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                                decoration: BoxDecoration(
-                                                  color: Color(int.parse(Payment.getStatusColor(payment.statut).substring(1, 7), radix: 16) + 0xFF000000),
-                                                  borderRadius: BorderRadius.circular(12),
-                                                ),
-                                                child: Text(
-                                                  payment.statut,
-                                                  style: TextStyle(
-                                                    color: Colors.white,
-                                                    fontWeight: FontWeight.bold,
-                                                    fontSize: 12,
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
+                    // Tab bar for Payments and Related Charges
+                    DefaultTabController(
+                      length: 2,
+                      child: Expanded(
+                        child: Column(
+                          children: [
+                            TabBar(
+                              tabs: [
+                                Tab(text: 'Paiements (${_payments.length})'),
+                                Tab(text: 'Charges associées (${_relatedCharges.length})'),
+                              ],
+                              labelColor: Colors.blue,
+                              unselectedLabelColor: Colors.grey,
+                              indicatorColor: Colors.blue,
+                            ),
+                            Expanded(
+                              child: TabBarView(
+                                children: [
+                                  // Payments tab
+                                  _payments.isEmpty
+                                    ? Center(
+                                        child: Text(
+                                          'Aucun paiement à afficher',
+                                          style: TextStyle(fontSize: 18, color: Colors.grey[600]),
                                         ),
-                                        Padding(
+                                      )
+                                    : RefreshIndicator(
+                                        onRefresh: _loadPaymentHistory,
+                                        child: ListView.builder(
                                           padding: EdgeInsets.all(16),
-                                          child: Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                            children: [
-                                              Row(
-                                                children: [
-                                                  Icon(Icons.euro, size: 16, color: Colors.blue),
-                                                  SizedBox(width: 4),
-                                                  Text(
-                                                    'Montant: ${Payment.formatCurrency(payment.montant)}',
-                                                    style: TextStyle(fontWeight: FontWeight.bold),
-                                                  ),
-                                                ],
-                                              ),
-                                              SizedBox(height: 8),
-                                              Row(
-                                                children: [
-                                                  Icon(Icons.calendar_today, size: 16, color: Colors.blue),
-                                                  SizedBox(width: 4),
-                                                  Text(
-                                                    'Date: ${_formatDateTime(payment.datePayment)}',
-                                                  ),
-                                                ],
-                                              ),
-                                              SizedBox(height: 8),
-                                              Row(
-                                                children: [
-                                                  Icon(Icons.payment, size: 16, color: Colors.blue),
-                                                  SizedBox(width: 4),
-                                                  Text(
-                                                    'Méthode: ${payment.methodePaiement}',
-                                                  ),
-                                                ],
-                                              ),
-                                              SizedBox(height: 8),
-                                              Row(
-                                                children: [
-                                                  Icon(Icons.numbers, size: 16, color: Colors.blue),
-                                                  SizedBox(width: 4),
-                                                  Text(
-                                                    'Référence: ${payment.reference}',
-                                                  ),
-                                                ],
-                                              ),
-                                              if (payment.notes.isNotEmpty)
-                                                Padding(
-                                                  padding: const EdgeInsets.only(top: 8.0),
-                                                  child: Row(
-                                                    children: [
-                                                      Icon(Icons.note, size: 16, color: Colors.blue),
-                                                      SizedBox(width: 4),
-                                                      Expanded(
-                                                        child: Text(
-                                                          'Notes: ${payment.notes}',
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
+                                          itemCount: _payments.length,
+                                          itemBuilder: (context, index) {
+                                            final payment = _payments[index];
+                                            final bool isConfirmed = payment.statut.toLowerCase() == 'confirmé';
+                                            final bool isPending = payment.statut.toLowerCase() == 'en attente';
+
+                                            return Card(
+                                              margin: EdgeInsets.only(bottom: 16),
+                                              elevation: 2,
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius: BorderRadius.circular(12),
+                                                side: BorderSide(
+                                                  color: Color(int.parse(Payment.getStatusColor(payment.statut).substring(1, 7), radix: 16) + 0xFF000000).withOpacity(0.5),
+                                                  width: 1,
                                                 ),
-                                              if (payment.isPartial)
-                                                Padding(
-                                                  padding: const EdgeInsets.only(top: 8.0),
-                                                  child: Row(
-                                                    children: [
-                                                      Icon(Icons.account_balance_wallet, size: 16, color: Colors.orange),
-                                                      SizedBox(width: 4),
-                                                      Text(
-                                                        'Paiement partiel - Restant: ${Payment.formatCurrency(payment.remainingAmount)}',
-                                                        style: TextStyle(
-                                                          color: Colors.orange,
-                                                          fontWeight: FontWeight.bold,
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                              SizedBox(height: 16),
-                                              if (isConfirmed && payment.receiptPdfPath != null)
-                                                Row(
-                                                  mainAxisAlignment: MainAxisAlignment.end,
-                                                  children: [
-                                                    ElevatedButton.icon(
-                                                      onPressed: () => _openReceipt(payment.receiptPdfPath),
-                                                      icon: Icon(Icons.receipt),
-                                                      label: Text('Voir le reçu'),
-                                                      style: ElevatedButton.styleFrom(
-                                                        backgroundColor: Colors.green,
-                                                        foregroundColor: Colors.white,
+                                              ),
+                                              child: Column(
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                children: [
+                                                  Container(
+                                                    padding: EdgeInsets.all(16),
+                                                    decoration: BoxDecoration(
+                                                      color: Color(int.parse(Payment.getStatusColor(payment.statut).substring(1, 7), radix: 16) + 0xFF000000).withOpacity(0.1),
+                                                      borderRadius: BorderRadius.only(
+                                                        topLeft: Radius.circular(12),
+                                                        topRight: Radius.circular(12),
                                                       ),
                                                     ),
-                                                  ],
-                                                ),
-                                            ],
-                                          ),
+                                                    child: Row(
+                                                      children: [
+                                                        Icon(
+                                                          isConfirmed ? Icons.check_circle : (isPending ? Icons.timelapse : Icons.warning),
+                                                          color: Color(int.parse(Payment.getStatusColor(payment.statut).substring(1, 7), radix: 16) + 0xFF000000),
+                                                        ),
+                                                        SizedBox(width: 8),
+                                                        Expanded(
+                                                          child: Text(
+                                                            payment.charge != null
+                                                                ? payment.charge!['titre'] ?? 'Paiement'
+                                                                : 'Paiement',
+                                                            style: TextStyle(
+                                                              fontSize: 16,
+                                                              fontWeight: FontWeight.bold,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                        Container(
+                                                          padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                                          decoration: BoxDecoration(
+                                                            color: Color(int.parse(Payment.getStatusColor(payment.statut).substring(1, 7), radix: 16) + 0xFF000000),
+                                                            borderRadius: BorderRadius.circular(12),
+                                                          ),
+                                                          child: Text(
+                                                            payment.statut,
+                                                            style: TextStyle(
+                                                              color: Colors.white,
+                                                              fontWeight: FontWeight.bold,
+                                                              fontSize: 12,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                  Padding(
+                                                    padding: EdgeInsets.all(16),
+                                                    child: Column(
+                                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                                      children: [
+                                                        Row(
+                                                          children: [
+                                                            Icon(Icons.euro, size: 16, color: Colors.blue),
+                                                            SizedBox(width: 4),
+                                                            Text(
+                                                              'Montant: ${Payment.formatCurrency(payment.montant)}',
+                                                              style: TextStyle(fontWeight: FontWeight.bold),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                        SizedBox(height: 8),
+                                                        Row(
+                                                          children: [
+                                                            Icon(Icons.calendar_today, size: 16, color: Colors.blue),
+                                                            SizedBox(width: 4),
+                                                            Text(
+                                                              'Date: ${_formatDateTime(payment.datePayment)}',
+                                                            ),
+                                                          ],
+                                                        ),
+                                                        SizedBox(height: 8),
+                                                        Row(
+                                                          children: [
+                                                            Icon(Icons.payment, size: 16, color: Colors.blue),
+                                                            SizedBox(width: 4),
+                                                            Text(
+                                                              'Méthode: ${payment.methodePaiement}',
+                                                            ),
+                                                          ],
+                                                        ),
+                                                        SizedBox(height: 8),
+                                                        Row(
+                                                          children: [
+                                                            Icon(Icons.numbers, size: 16, color: Colors.blue),
+                                                            SizedBox(width: 4),
+                                                            Text(
+                                                              'Référence: ${payment.reference}',
+                                                            ),
+                                                          ],
+                                                        ),
+                                                        if (payment.notes.isNotEmpty)
+                                                          Padding(
+                                                            padding: const EdgeInsets.only(top: 8.0),
+                                                            child: Row(
+                                                              children: [
+                                                                Icon(Icons.note, size: 16, color: Colors.blue),
+                                                                SizedBox(width: 4),
+                                                                Expanded(
+                                                                  child: Text(
+                                                                    'Notes: ${payment.notes}',
+                                                                  ),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                          ),
+                                                        if (payment.isPartial)
+                                                          Padding(
+                                                            padding: const EdgeInsets.only(top: 8.0),
+                                                            child: Row(
+                                                              children: [
+                                                                Icon(Icons.account_balance_wallet, size: 16, color: Colors.orange),
+                                                                SizedBox(width: 4),
+                                                                Text(
+                                                                  'Paiement partiel - Restant: ${Payment.formatCurrency(payment.remainingAmount)}',
+                                                                  style: TextStyle(
+                                                                    color: Colors.orange,
+                                                                    fontWeight: FontWeight.bold,
+                                                                  ),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                          ),
+                                                        SizedBox(height: 16),
+                                                        if (isConfirmed && payment.receiptPdfPath != null)
+                                                          Row(
+                                                            mainAxisAlignment: MainAxisAlignment.end,
+                                                            children: [
+                                                              ElevatedButton.icon(
+                                                                onPressed: () => _openReceipt(payment.receiptPdfPath),
+                                                                icon: Icon(Icons.receipt),
+                                                                label: Text('Voir le reçu'),
+                                                                style: ElevatedButton.styleFrom(
+                                                                  backgroundColor: Colors.green,
+                                                                  foregroundColor: Colors.white,
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            );
+                                          },
                                         ),
-                                      ],
-                                    ),
-                                  );
-                                },
+                            ),
+                                  // Related Charges tab
+                                  _relatedCharges.isEmpty
+                                    ? Center(
+                                        child: Text(
+                                          'Aucune charge associée à afficher',
+                                          style: TextStyle(fontSize: 18, color: Colors.grey[600]),
+                                        ),
+                                      )
+                                    : RefreshIndicator(
+                                        onRefresh: _loadPaymentHistory,
+                                        child: ListView.builder(
+                                          padding: EdgeInsets.all(16),
+                                          itemCount: _relatedCharges.length,
+                                          itemBuilder: (context, index) {
+                                            final charge = _relatedCharges[index];
+                                            final bool isPaid = charge.statut.toLowerCase() == 'payé';
+                                            final bool isPartiallyPaid = charge.statut.toLowerCase() == 'partiellement payé';
+
+                                            return Card(
+                                              margin: EdgeInsets.only(bottom: 16),
+                                              elevation: 2,
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius: BorderRadius.circular(12),
+                                                side: BorderSide(
+                                                  color: Color(int.parse(Charge.getStatusColor(charge.statut).substring(1, 7), radix: 16) + 0xFF000000).withOpacity(0.5),
+                                                  width: 1,
+                                                ),
+                                              ),
+                                              child: Column(
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                children: [
+                                                  Container(
+                                                    padding: EdgeInsets.all(16),
+                                                    decoration: BoxDecoration(
+                                                      color: Color(int.parse(Charge.getStatusColor(charge.statut).substring(1, 7), radix: 16) + 0xFF000000).withOpacity(0.1),
+                                                      borderRadius: BorderRadius.only(
+                                                        topLeft: Radius.circular(12),
+                                                        topRight: Radius.circular(12),
+                                                      ),
+                                                    ),
+                                                    child: Row(
+                                                      children: [
+                                                        Icon(
+                                                          isPaid ? Icons.check_circle : (isPartiallyPaid ? Icons.timelapse : Icons.warning),
+                                                          color: Color(int.parse(Charge.getStatusColor(charge.statut).substring(1, 7), radix: 16) + 0xFF000000),
+                                                        ),
+                                                        SizedBox(width: 8),
+                                                        Expanded(
+                                                          child: Text(
+                                                            charge.titre,
+                                                            style: TextStyle(
+                                                              fontSize: 16,
+                                                              fontWeight: FontWeight.bold,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                        Container(
+                                                          padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                                          decoration: BoxDecoration(
+                                                            color: Color(int.parse(Charge.getStatusColor(charge.statut).substring(1, 7), radix: 16) + 0xFF000000),
+                                                            borderRadius: BorderRadius.circular(12),
+                                                          ),
+                                                          child: Text(
+                                                            charge.statut,
+                                                            style: TextStyle(
+                                                              color: Colors.white,
+                                                              fontWeight: FontWeight.bold,
+                                                              fontSize: 12,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                  Padding(
+                                                    padding: EdgeInsets.all(16),
+                                                    child: Column(
+                                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                                      children: [
+                                                        Text(
+                                                          charge.description,
+                                                          style: TextStyle(fontSize: 14, color: Colors.grey[700]),
+                                                        ),
+                                                        SizedBox(height: 16),
+                                                        Row(
+                                                          children: [
+                                                            Icon(Icons.euro, size: 16, color: Colors.blue),
+                                                            SizedBox(width: 4),
+                                                            Text(
+                                                              'Montant: ${Charge.formatCurrency(charge.montant)}',
+                                                              style: TextStyle(fontWeight: FontWeight.bold),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                        SizedBox(height: 8),
+                                                        Row(
+                                                          children: [
+                                                            Icon(Icons.calendar_today, size: 16, color: Colors.blue),
+                                                            SizedBox(width: 4),
+                                                            Text(
+                                                              'Échéance: ${_formatDate(charge.dateEcheance)}',
+                                                            ),
+                                                          ],
+                                                        ),
+                                                        if (isPartiallyPaid || !isPaid)
+                                                          Padding(
+                                                            padding: const EdgeInsets.only(top: 8.0),
+                                                            child: Row(
+                                                              children: [
+                                                                Icon(Icons.account_balance_wallet, size: 16, color: Colors.blue),
+                                                                SizedBox(width: 4),
+                                                                Text(
+                                                                  'Restant à payer: ${Charge.formatCurrency(charge.montantRestant)}',
+                                                                  style: TextStyle(
+                                                                    fontWeight: FontWeight.bold,
+                                                                    color: Colors.red,
+                                                                  ),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                          ),
+                                                        if (isPartiallyPaid)
+                                                          Padding(
+                                                            padding: const EdgeInsets.only(top: 8.0),
+                                                            child: Row(
+                                                              children: [
+                                                                Icon(Icons.check_circle_outline, size: 16, color: Colors.green),
+                                                                SizedBox(width: 4),
+                                                                Text(
+                                                                  'Déjà payé: ${Charge.formatCurrency(charge.montantPaye)}',
+                                                                  style: TextStyle(
+                                                                    color: Colors.green,
+                                                                  ),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                          ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            );
+                                          },
+                                        ),
+                                      ),
+                                ],
                               ),
                             ),
+                          ],
+                        ),
+                      ),
                     ),
                   ],
                 ),
