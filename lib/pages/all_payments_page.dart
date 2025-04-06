@@ -71,14 +71,7 @@ class _AllPaymentsPageState extends State<AllPaymentsPage> {
     });
   }
 
-  void _navigateToPendingPayments() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => PendingPaymentsPage(),
-      ),
-    ).then((_) => _loadPayments()); // Reload payments when returning
-  }
+  // Navigation to pending payments removed
 
   Future<void> _confirmPayment(Payment payment) async {
     // Show confirmation dialog
@@ -204,20 +197,6 @@ class _AllPaymentsPageState extends State<AllPaymentsPage> {
         centerTitle: true,
         backgroundColor: const Color.fromARGB(255, 64, 66, 69),
         iconTheme: IconThemeData(color: Colors.white),
-        actions: [
-          // Button to navigate to pending payments
-          ElevatedButton.icon(
-            icon: Icon(Icons.pending_actions, color: Colors.white),
-            label: Text('Paiements en attente', style: TextStyle(color: Colors.white)),
-            onPressed: _navigateToPendingPayments,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.orange,
-              elevation: 0,
-              padding: EdgeInsets.symmetric(horizontal: 16),
-            ),
-          ),
-          SizedBox(width: 8),
-        ],
       ),
       body: _isLoading
           ? Center(child: CircularProgressIndicator())
@@ -510,12 +489,6 @@ class _AllPaymentsPageState extends State<AllPaymentsPage> {
                     ),
                   ],
                 ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _navigateToPendingPayments,
-        backgroundColor: Colors.orange,
-        child: Icon(Icons.pending_actions, color: Colors.white),
-        tooltip: 'Paiements en attente',
-      ),
     );
   }
 }
