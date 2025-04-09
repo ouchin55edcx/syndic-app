@@ -669,8 +669,8 @@ class _PaymentHistoryPageState extends State<PaymentHistoryPage> {
                                           itemCount: _relatedCharges.length,
                                           itemBuilder: (context, index) {
                                             final charge = _relatedCharges[index];
-                                            final bool isPaid = charge.statut.toLowerCase() == 'payé';
-                                            final bool isPartiallyPaid = charge.statut.toLowerCase() == 'partiellement payé';
+                                            final bool isPaid = charge.montantRestant == 0;
+                                            final bool isPartiallyPaid = charge.montantPaye > 0 && charge.montantRestant > 0;
 
                                             return Card(
                                               margin: EdgeInsets.only(bottom: 16),
@@ -678,7 +678,9 @@ class _PaymentHistoryPageState extends State<PaymentHistoryPage> {
                                               shape: RoundedRectangleBorder(
                                                 borderRadius: BorderRadius.circular(12),
                                                 side: BorderSide(
-                                                  color: Color(int.parse(Charge.getStatusColor(charge.statut).substring(1, 7), radix: 16) + 0xFF000000).withOpacity(0.5),
+                                                  color: isPaid 
+                                                    ? Colors.green.withOpacity(0.5)
+                                                    : Color(int.parse(Charge.getStatusColor(charge.statut).substring(1, 7), radix: 16) + 0xFF000000).withOpacity(0.5),
                                                   width: 1,
                                                 ),
                                               ),
@@ -688,7 +690,9 @@ class _PaymentHistoryPageState extends State<PaymentHistoryPage> {
                                                   Container(
                                                     padding: EdgeInsets.all(16),
                                                     decoration: BoxDecoration(
-                                                      color: Color(int.parse(Charge.getStatusColor(charge.statut).substring(1, 7), radix: 16) + 0xFF000000).withOpacity(0.1),
+                                                      color: isPaid 
+                                                        ? Colors.green.withOpacity(0.1)
+                                                        : Color(int.parse(Charge.getStatusColor(charge.statut).substring(1, 7), radix: 16) + 0xFF000000).withOpacity(0.1),
                                                       borderRadius: BorderRadius.only(
                                                         topLeft: Radius.circular(12),
                                                         topRight: Radius.circular(12),
@@ -698,7 +702,9 @@ class _PaymentHistoryPageState extends State<PaymentHistoryPage> {
                                                       children: [
                                                         Icon(
                                                           isPaid ? Icons.check_circle : (isPartiallyPaid ? Icons.timelapse : Icons.warning),
-                                                          color: Color(int.parse(Charge.getStatusColor(charge.statut).substring(1, 7), radix: 16) + 0xFF000000),
+                                                          color: isPaid 
+                                                            ? Colors.green
+                                                            : Color(int.parse(Charge.getStatusColor(charge.statut).substring(1, 7), radix: 16) + 0xFF000000),
                                                         ),
                                                         SizedBox(width: 8),
                                                         Expanded(
@@ -713,11 +719,13 @@ class _PaymentHistoryPageState extends State<PaymentHistoryPage> {
                                                         Container(
                                                           padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                                           decoration: BoxDecoration(
-                                                            color: Color(int.parse(Charge.getStatusColor(charge.statut).substring(1, 7), radix: 16) + 0xFF000000),
+                                                            color: isPaid 
+                                                              ? Colors.green
+                                                              : Color(int.parse(Charge.getStatusColor(charge.statut).substring(1, 7), radix: 16) + 0xFF000000),
                                                             borderRadius: BorderRadius.circular(12),
                                                           ),
                                                           child: Text(
-                                                            charge.statut,
+                                                            isPaid ? 'Payé' : charge.statut,
                                                             style: TextStyle(
                                                               color: Colors.white,
                                                               fontWeight: FontWeight.bold,

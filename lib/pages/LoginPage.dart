@@ -257,22 +257,6 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                     ),
                   ),
-
-                  // Credentials helper text
-                  Padding(
-                    padding: const EdgeInsets.only(top: 10),
-                    child: Text(
-                      _loginType == AuthService.SYNDIC
-                          ? "Syndic: admin@syndic.com / admin123"
-                          : "Propriétaire: proprietaire@example.com / password123",
-                      style: TextStyle(
-                        color: Colors.black.withOpacity(0.6),
-                        fontSize: 12,
-                        fontStyle: FontStyle.italic,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
                   const SizedBox(height: 10),
                 ],
               ),

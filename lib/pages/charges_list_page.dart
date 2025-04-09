@@ -412,8 +412,10 @@ class _ChargesListPageState extends State<ChargesListPage> {
                                           child: Row(
                                             children: [
                                               Icon(
-                                                isPaid ? Icons.check_circle : (isPartiallyPaid ? Icons.timelapse : Icons.warning),
-                                                color: Color(int.parse(Charge.getStatusColor(charge.statut).substring(1, 7), radix: 16) + 0xFF000000),
+                                                charge.montantRestant == 0 ? Icons.check_circle : (isPartiallyPaid ? Icons.timelapse : Icons.warning),
+                                                color: charge.montantRestant == 0 
+                                                    ? Colors.green 
+                                                    : Color(int.parse(Charge.getStatusColor(charge.statut).substring(1, 7), radix: 16) + 0xFF000000),
                                               ),
                                               SizedBox(width: 8),
                                               Expanded(
@@ -428,11 +430,13 @@ class _ChargesListPageState extends State<ChargesListPage> {
                                               Container(
                                                 padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                                 decoration: BoxDecoration(
-                                                  color: Color(int.parse(Charge.getStatusColor(charge.statut).substring(1, 7), radix: 16) + 0xFF000000),
+                                                  color: charge.montantRestant == 0 
+                                                    ? Colors.green 
+                                                    : Color(int.parse(Charge.getStatusColor(charge.statut).substring(1, 7), radix: 16) + 0xFF000000),
                                                   borderRadius: BorderRadius.circular(12),
                                                 ),
                                                 child: Text(
-                                                  charge.statut,
+                                                  charge.montantRestant == 0 ? 'Payé' : charge.statut,
                                                   style: TextStyle(
                                                     color: Colors.white,
                                                     fontWeight: FontWeight.bold,
@@ -528,7 +532,8 @@ class _ChargesListPageState extends State<ChargesListPage> {
                                               Row(
                                                 mainAxisAlignment: MainAxisAlignment.end,
                                                 children: [
-                                                  if (!isPaid && !isSyndic)
+                                                  // Bouton de paiement pour les propriétaires
+                                                  if (charge.montantRestant > 0 && !isSyndic)
                                                     ElevatedButton.icon(
                                                       onPressed: () => _navigateToMakePayment(charge),
                                                       icon: Icon(Icons.payment),
@@ -539,7 +544,8 @@ class _ChargesListPageState extends State<ChargesListPage> {
                                                         padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                                                       ),
                                                     ),
-                                                  if (!isPaid && isSyndic)
+                                                  // Bouton de rappel pour les syndics uniquement si montantRestant > 0
+                                                  if (charge.montantRestant != 0 && isSyndic)
                                                     ElevatedButton.icon(
                                                       onPressed: () => _generatePaymentReminder(charge),
                                                       icon: Icon(Icons.notification_important),
@@ -547,20 +553,6 @@ class _ChargesListPageState extends State<ChargesListPage> {
                                                       style: ElevatedButton.styleFrom(
                                                         backgroundColor: Colors.orange,
                                                         foregroundColor: Colors.white,
-                                                      ),
-                                                    ),
-                                                  // Add "Send Client Notice" button if montantRestant > 0
-                                                  if (charge.montantRestant > 0)
-                                                    Padding(
-                                                      padding: const EdgeInsets.only(left: 8.0),
-                                                      child: ElevatedButton.icon(
-                                                        onPressed: () => _generatePaymentReminder(charge),
-                                                        icon: Icon(Icons.mail_outline),
-                                                        label: Text('Send Client Notice'),
-                                                        style: ElevatedButton.styleFrom(
-                                                          backgroundColor: Colors.red,
-                                                          foregroundColor: Colors.white,
-                                                        ),
                                                       ),
                                                     ),
                                                 ],
