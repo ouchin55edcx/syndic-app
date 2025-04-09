@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
 import '../models/user_model.dart';
 import '../models/proprietaire_profile_model.dart';
+import '../models/appartement_model.dart';
 
 class ProprietaireService {
   static const String baseUrl = 'http://localhost:3000/api';
@@ -118,11 +119,11 @@ class ProprietaireService {
 
   Future<Map<String, dynamic>> getProprietaireProfile(String token) async {
     try {
-      debugPrint('Fetching proprietaire profile with token: $token');
-      debugPrint('Authorization header: Bearer $token');
+      final uri = Uri.parse('$baseUrl/proprietaires/profile');
+      debugPrint('Fetching profile from: $uri');
 
       final response = await http.get(
-        Uri.parse('$baseUrl/proprietaires/profile'),
+        uri,
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
@@ -134,13 +135,21 @@ class ProprietaireService {
 
       final Map<String, dynamic> responseData = jsonDecode(response.body);
 
-      if (response.statusCode == 200) {
+      if (response.statusCode == 200 && responseData['success']) {
+        final proprietaireData = responseData['proprietaire'];
+        final appartementData = responseData['appartement'];
+
+        // Create ProprietaireProfile object
+        final profile = ProprietaireProfile.fromJson(proprietaireData);
+
+        // If appartement data exists, create Appartement object
+        if (appartementData != null) {
+          profile.appartement = Appartement.fromJson(appartementData);
+        }
+
         return {
           'success': true,
-          'proprietaire': responseData['proprietaire'] != null
-              ? ProprietaireProfile.fromJson(responseData['proprietaire'])
-              : null,
-          'appartement': responseData['appartement'],
+          'proprietaire': profile,
         };
       } else {
         return {
@@ -153,6 +162,45 @@ class ProprietaireService {
       return {
         'success': false,
         'message': 'An error occurred. Please try again: $e',
+      };
+    }
+  }
+
+  // Add this new method to fetch apartment details
+  Future<Map<String, dynamic>> getAppartementDetails(String appartementId, String token) async {
+    try {
+      final uri = Uri.parse('$baseUrl/appartements/$appartementId');
+      debugPrint('Fetching apartment details from: $uri');
+
+      final response = await http.get(
+        uri,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      debugPrint('Apartment response status code: ${response.statusCode}');
+      debugPrint('Apartment response body: ${response.body}');
+
+      final Map<String, dynamic> responseData = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        return {
+          'success': true,
+          'appartement': responseData['appartement'],
+        };
+      } else {
+        return {
+          'success': false,
+          'message': responseData['message'] ?? 'Failed to fetch apartment details',
+        };
+      }
+    } catch (e) {
+      debugPrint('Get apartment details error: $e');
+      return {
+        'success': false,
+        'message': 'An error occurred while fetching apartment details: $e',
       };
     }
   }

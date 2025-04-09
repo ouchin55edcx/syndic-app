@@ -7,12 +7,13 @@ class ProprietaireProfile {
   final String lastName;
   final String phoneNumber;
   final String role;
+  final String? appartementId;
+  final DateTime? ownershipDate;
   final String createdAt;
   final String updatedAt;
-  final String? appartementId;
-  final String? ownershipDate;
-  final String? createdBy;
-  final Appartement? appartement;
+  Appartement? appartement;
+
+  String get fullName => '$firstName $lastName';
 
   ProprietaireProfile({
     required this.id,
@@ -21,11 +22,10 @@ class ProprietaireProfile {
     required this.lastName,
     required this.phoneNumber,
     required this.role,
-    required this.createdAt,
-    required this.updatedAt,
     this.appartementId,
     this.ownershipDate,
-    this.createdBy,
+    required this.createdAt,
+    required this.updatedAt,
     this.appartement,
   });
 
@@ -37,41 +37,12 @@ class ProprietaireProfile {
       lastName: json['lastName'] ?? '',
       phoneNumber: json['phoneNumber'] ?? '',
       role: json['role'] ?? '',
+      appartementId: json['appartementId'],
+      ownershipDate: json['ownershipDate'] != null 
+          ? DateTime.parse(json['ownershipDate'])
+          : null,
       createdAt: json['createdAt'] ?? '',
       updatedAt: json['updatedAt'] ?? '',
-      appartementId: json['appartementId'],
-      ownershipDate: json['ownershipDate'],
-      createdBy: json['createdBy'],
-      appartement: json['appartement'] != null 
-          ? Appartement.fromJson(json['appartement']) 
-          : null,
     );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'email': email,
-      'firstName': firstName,
-      'lastName': lastName,
-      'phoneNumber': phoneNumber,
-      'role': role,
-      'createdAt': createdAt,
-      'updatedAt': updatedAt,
-      'appartementId': appartementId,
-      'ownershipDate': ownershipDate,
-      'createdBy': createdBy,
-    };
-  }
-
-  // Helper method to get full name
-  String get fullName => '$firstName $lastName';
-  
-  // Helper method to get apartment info
-  String get apartmentInfo {
-    if (appartement != null) {
-      return 'Appartement ${appartement!.numero}, Étage ${appartement!.etage}';
-    }
-    return 'Aucun appartement associé';
   }
 }

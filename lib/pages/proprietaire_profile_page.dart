@@ -351,34 +351,76 @@ class _ProprietaireProfilePageState extends State<ProprietaireProfilePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              "Informations sur l'appartement",
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  "Informations sur l'appartement",
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Icon(
+                  Icons.apartment,
+                  color: const Color.fromARGB(255, 75, 160, 173),
+                  size: 24,
+                ),
+              ],
             ),
             Divider(height: 30),
-            if (_profile!.appartement != null) ...[
-              _buildInfoRow(Icons.apartment, "Numéro", _profile!.appartement!.numero),
+            if (_profile?.appartement != null) ...[
+              _buildInfoRow(Icons.numbers, "Numéro", _profile!.appartement!.numero),
               SizedBox(height: 15),
-              _buildInfoRow(Icons.stairs, "Étage", _profile!.appartement!.etage.toString()),
+              _buildInfoRow(Icons.stairs, "Étage", "${_profile!.appartement!.etage}"),
               SizedBox(height: 15),
               _buildInfoRow(Icons.square_foot, "Superficie", "${_profile!.appartement!.superficie} m²"),
               SizedBox(height: 15),
-              _buildInfoRow(Icons.meeting_room, "Nombre de pièces", _profile!.appartement!.nombrePieces.toString()),
+              _buildInfoRow(Icons.meeting_room, "Nombre de pièces", "${_profile!.appartement!.nombrePieces}"),
               SizedBox(height: 15),
-              _buildInfoRow(Icons.info_outline, "Statut", _profile!.appartement!.statut),
+              _buildInfoRow(Icons.home_work, "Statut", _profile!.appartement!.statut),
+              SizedBox(height: 15),
+              _buildInfoRow(
+                Icons.calendar_today,
+                "Date de création",
+                _formatDate(_profile!.appartement!.createdAt),
+              ),
+              SizedBox(height: 15),
+              _buildInfoRow(
+                Icons.update,
+                "Dernière mise à jour",
+                _formatDate(_profile!.appartement!.updatedAt),
+              ),
+              if (_profile!.appartement!.immeubleId != null) ...[
+                SizedBox(height: 15),
+                _buildInfoRow(
+                  Icons.domain,
+                  "ID Immeuble",
+                  _profile!.appartement!.immeubleId!,
+                ),
+              ],
             ] else
               Center(
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
-                  child: Text(
-                    "Aucun appartement associé à ce profil",
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.grey[600],
-                    ),
+                  child: Column(
+                    children: [
+                      Icon(
+                        Icons.home_work_outlined,
+                        size: 48,
+                        color: Colors.grey,
+                      ),
+                      SizedBox(height: 16),
+                      Text(
+                        "Aucun appartement associé à ce profil",
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.grey[600],
+                          fontStyle: FontStyle.italic,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -505,12 +547,17 @@ class _ProprietaireProfilePageState extends State<ProprietaireProfilePage> {
     );
   }
 
-  String _formatDate(String dateString) {
+  String _formatDate(dynamic date) {
     try {
-      final date = DateTime.parse(dateString);
-      return '${date.day}/${date.month}/${date.year}';
+      if (date is DateTime) {
+        return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
+      } else if (date is String) {
+        final parsedDate = DateTime.parse(date);
+        return '${parsedDate.day.toString().padLeft(2, '0')}/${parsedDate.month.toString().padLeft(2, '0')}/${parsedDate.year}';
+      }
+      return 'Date invalide';
     } catch (e) {
-      return dateString;
+      return 'Date invalide';
     }
   }
 
