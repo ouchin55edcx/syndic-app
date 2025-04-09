@@ -1,190 +1,369 @@
 import 'package:flutter/material.dart';
-import 'UserProfilePage.dart';
 import 'LoginPage.dart';
+
 class SettingsPage extends StatefulWidget {
   @override
   _SettingsPageState createState() => _SettingsPageState();
 }
 
 class _SettingsPageState extends State<SettingsPage> {
-  bool _notificationsEnabled = true; // État pour les notifications
+  final Color primaryColor = Color.fromARGB(255, 64, 66, 69);
+  final Color accentColor = Color.fromARGB(255, 75, 160, 173);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: const Color.fromARGB(255, 64, 66, 69),
-        elevation: 0, // Supprimer l'ombre
+        backgroundColor: primaryColor,
+        elevation: 0,
         title: Text(
           'Paramètres',
           style: TextStyle(
-            color: const Color.fromARGB(255, 255, 255, 255), // Texte noir
+            color: Colors.white,
             fontWeight: FontWeight.bold,
+            fontSize: 22,
           ),
         ),
-        iconTheme: IconThemeData(color: Colors.black), // Icônes noirs
       ),
-      body: ListView(
-        padding: EdgeInsets.all(0),
-        children: [
-          _buildSectionTitle('Compte'),
-          _buildListTile(
-            context,
-            icon: Icons.account_circle,
-            title: 'Profil',
-            onTap: () {
-              // Naviguer vers la page de profil
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => UserProfilePage()),
-              );
-            },
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              primaryColor,
+              Colors.white,
+            ],
+            stops: [0.0, 0.3],
           ),
-          _buildListTile(
-            context,
-            icon: Icons.lock,
-            title: 'Sécurité',
-            onTap: () {
-              // Naviguer vers les paramètres de sécurité
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => SecurityPage()),
-              );
-            },
-          ),
-          Divider(),
-          
-          _buildSectionTitle('Préférences'),
-          _buildListTile(
-            context,
-            icon: Icons.language,
-            title: 'Langue',
-            onTap: () {
-              // Naviguer vers les paramètres de langue
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => LanguageSettingsPage()),
-              );
-            },
-          ),
-          _buildListTile(
-            context,
-            icon: Icons.notifications,
-            title: 'Notifications',
-            trailing: Switch(
-              value: _notificationsEnabled,
-              onChanged: (bool value) {
-                setState(() {
-                  _notificationsEnabled = value;
-                });
+        ),
+        child: ListView(
+          padding: EdgeInsets.only(top: 20),
+          children: [
+            _buildSectionTitle('Autre'),
+            _buildListTile(
+              context,
+              icon: Icons.help_outline,
+              title: 'Aide et support',
+              subtitle: 'Guides et assistance',
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => HelpPage()),
+                );
               },
             ),
-            onTap: () {
-              // Ajouter la logique pour gérer l'appui sur la liste des notifications
-            },
-          ),
-          Divider(),
+            SizedBox(height: 8),
+            _buildListTile(
+              context,
+              icon: Icons.exit_to_app,
+              title: 'Déconnexion',
+              subtitle: 'Se déconnecter de l\'application',
+              onTap: () {
+                _showLogoutDialog();
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
-          _buildSectionTitle('Autre'),
-          _buildListTile(
-            context,
-            icon: Icons.help,
-            title: 'Aide et support',
-            onTap: () {
-              // Naviguer vers la page d'aide
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => HelpPage()),
-              );
-            },
-          ),
-          _buildListTile(
-            context,
-            icon: Icons.exit_to_app,
-            title: 'Déconnexion',
-            onTap: () {
-              // Logique de déconnexion
-              _logout();
-            },
+  Widget _buildSectionTitle(String title) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+      child: Text(
+        title.toUpperCase(),
+        style: TextStyle(
+          fontSize: 13,
+          fontWeight: FontWeight.w600,
+          color: Colors.white,
+          letterSpacing: 1.2,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildListTile(
+    BuildContext context, {
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+    Widget? trailing,
+  }) {
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: Offset(0, 4),
           ),
         ],
       ),
+      child: ListTile(
+        contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+        leading: Container(
+          padding: EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: accentColor.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(
+            icon,
+            color: accentColor,
+            size: 24,
+          ),
+        ),
+        title: Text(
+          title,
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            color: primaryColor,
+          ),
+        ),
+        subtitle: Text(
+          subtitle,
+          style: TextStyle(
+            fontSize: 13,
+            color: Colors.grey[600],
+          ),
+        ),
+        trailing: Icon(
+          Icons.chevron_right,
+          color: accentColor,
+        ),
+        onTap: onTap,
+      ),
     );
   }
 
-  // Fonction de déconnexion
+  void _showLogoutDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+          ),
+          title: Text(
+            'Confirmation',
+            style: TextStyle(
+              color: primaryColor,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          content: Text(
+            'Êtes-vous sûr de vouloir vous déconnecter ?',
+            style: TextStyle(
+              color: Colors.grey[700],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(
+                'Annuler',
+                style: TextStyle(
+                  color: Colors.grey[600],
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(context);
+                _logout();
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: accentColor,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              ),
+              child: Text(
+                'Déconnecter',
+                style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   void _logout() {
-    // Ici, tu peux implémenter la logique pour déconnecter l'utilisateur (comme supprimer un token, etc.)
-    // Exemple : Navigator.pop(context); pour revenir à la page précédente
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (context) => LoginPage()), // Rediriger vers la page de connexion
-    );
-  }
-
-  // Titre de section
-  Widget _buildSectionTitle(String title) {
-    return Padding(
-      padding: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-      child: Text(
-        title,
-        style: TextStyle(
-          fontSize: 16,
-          fontWeight: FontWeight.bold,
-          color: Colors.grey[600],
-        ),
-      ),
-    );
-  }
-
-  // Liste des options de paramètre avec un icône et un bouton
-  Widget _buildListTile(BuildContext context, {
-    required IconData icon,
-    required String title,
-    Widget? trailing,
-    required Function() onTap,
-  }) {
-    return ListTile(
-      contentPadding: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-      leading: Icon(icon, color: Colors.black),
-      title: Text(
-        title,
-        style: TextStyle(color: Colors.black),
-      ),
-      trailing: trailing ?? Icon(Icons.chevron_right, color: Colors.black),
-      onTap: onTap,
-    );
-  }
-}
-
-
-class SecurityPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text('Sécurité')),
-      body: Center(child: Text('Page de Sécurité')),
-    );
-  }
-}
-
-class LanguageSettingsPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text('Langue')),
-      body: Center(child: Text('Page de Langue')),
+      MaterialPageRoute(builder: (context) => LoginPage()),
     );
   }
 }
 
 class HelpPage extends StatelessWidget {
+  final Color primaryColor = Color.fromARGB(255, 64, 66, 69);
+  final Color accentColor = Color.fromARGB(255, 75, 160, 173);
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Aide et support')),
-      body: Center(child: Text('Page d\'Aide et Support')),
+      appBar: AppBar(
+        title: Text(
+          'Aide et support',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        backgroundColor: primaryColor,
+        foregroundColor: Colors.white,
+        elevation: 0,
+      ),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [primaryColor, Colors.white],
+            stops: [0.0, 0.2],
+          ),
+        ),
+        child: SingleChildScrollView(
+          padding: EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildSection(
+                'Guide d\'utilisation',
+                [
+                  'Gérer les propriétaires: Ajoutez, modifiez ou supprimez des propriétaires',
+                  'Gestion des charges: Créez et suivez les charges de copropriété',
+                  'Paiements: Suivez les versements et générez des reçus',
+                  'Réunions: Planifiez et gérez les assemblées de copropriété',
+                ],
+                Icons.book,
+              ),
+              SizedBox(height: 24),
+              _buildSection(
+                'Contact Support',
+                [
+                  'Email: support@syndic-app.com',
+                  'Téléphone: +212 5XX-XXXXXX',
+                  'Horaires: Lun-Ven, 9h-18h',
+                ],
+                Icons.contact_support,
+              ),
+              SizedBox(height: 24),
+              _buildSection(
+                'FAQ',
+                [
+                  'Comment ajouter un nouveau propriétaire ?',
+                  'Comment générer un rapport de paiement ?',
+                  'Comment planifier une réunion ?',
+                  'Comment gérer les charges communes ?',
+                ],
+                Icons.question_answer,
+              ),
+              SizedBox(height: 24),
+              _buildSection(
+                'Ressources',
+                [
+                  'Guide PDF complet',
+                  'Tutoriels vidéo',
+                  'Documentation technique',
+                  'Mises à jour récentes',
+                ],
+                Icons.library_books,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSection(String title, List<String> items, IconData sectionIcon) {
+    return Container(
+      margin: EdgeInsets.only(bottom: 16),
+      padding: EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(15),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: accentColor.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(
+                  sectionIcon,
+                  color: accentColor,
+                  size: 24,
+                ),
+              ),
+              SizedBox(width: 12),
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: primaryColor,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 16),
+          ...items.map((item) => Padding(
+                padding: EdgeInsets.symmetric(vertical: 8),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      margin: EdgeInsets.only(top: 4),
+                      width: 6,
+                      height: 6,
+                      decoration: BoxDecoration(
+                        color: accentColor,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        item,
+                        style: TextStyle(
+                          fontSize: 15,
+                          color: Colors.grey[800],
+                          height: 1.4,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              )),
+        ],
+      ),
     );
   }
 }
-
