@@ -506,6 +506,24 @@ class _ChargesListPageState extends State<ChargesListPage> {
                                                     ],
                                                   ),
                                                 ),
+                                              // Check if montantRestant > 0
+                                              if (charge.montantRestant > 0)
+                                                Padding(
+                                                  padding: const EdgeInsets.only(top: 8.0),
+                                                  child: Row(
+                                                    children: [
+                                                      Icon(Icons.money_off, size: 16, color: Colors.red),
+                                                      SizedBox(width: 4),
+                                                      Text(
+                                                        'No payment',
+                                                        style: TextStyle(
+                                                          fontWeight: FontWeight.bold,
+                                                          color: Colors.red,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
                                               SizedBox(height: 16),
                                               Row(
                                                 mainAxisAlignment: MainAxisAlignment.end,
@@ -529,6 +547,20 @@ class _ChargesListPageState extends State<ChargesListPage> {
                                                       style: ElevatedButton.styleFrom(
                                                         backgroundColor: Colors.orange,
                                                         foregroundColor: Colors.white,
+                                                      ),
+                                                    ),
+                                                  // Add "Send Client Notice" button if montantRestant > 0
+                                                  if (charge.montantRestant > 0)
+                                                    Padding(
+                                                      padding: const EdgeInsets.only(left: 8.0),
+                                                      child: ElevatedButton.icon(
+                                                        onPressed: () => _generatePaymentReminder(charge),
+                                                        icon: Icon(Icons.mail_outline),
+                                                        label: Text('Send Client Notice'),
+                                                        style: ElevatedButton.styleFrom(
+                                                          backgroundColor: Colors.red,
+                                                          foregroundColor: Colors.white,
+                                                        ),
                                                       ),
                                                     ),
                                                 ],

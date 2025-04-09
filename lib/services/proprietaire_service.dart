@@ -6,7 +6,7 @@ import '../models/proprietaire_profile_model.dart';
 import '../models/appartement_model.dart';
 
 class ProprietaireService {
-  static const String baseUrl = 'http://localhost:3000/api';
+  final String baseUrl = 'http://localhost:3000/api';
 
   Future<Map<String, dynamic>> createProprietaire(
     Map<String, dynamic> proprietaireData,
@@ -58,11 +58,11 @@ class ProprietaireService {
       debugPrint('Original token: $token');
       final cleanToken = token.replaceAll('Bearer ', '');
       debugPrint('Cleaned token: $cleanToken');
-      
+
       // Debug request details
       final uri = Uri.parse('$baseUrl/proprietaires');
       debugPrint('Request URI: $uri');
-      
+
       final headers = {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $cleanToken',
@@ -85,7 +85,7 @@ class ProprietaireService {
         // Debug proprietaires count
         final proprietaires = responseData['proprietaires'] ?? [];
         debugPrint('Number of proprietaires received: ${proprietaires.length}');
-        
+
         // Debug first proprietaire if available
         if (proprietaires.isNotEmpty) {
           debugPrint('First proprietaire details: ${proprietaires.first}');
@@ -98,7 +98,7 @@ class ProprietaireService {
       } else {
         debugPrint('Request failed with status: ${response.statusCode}');
         debugPrint('Error message: ${responseData['message']}');
-        
+
         return {
           'success': false,
           'message': responseData['message'] ?? 'Failed to fetch proprietaires',
@@ -109,7 +109,7 @@ class ProprietaireService {
       debugPrint('Error in getMyProprietaires: $e');
       debugPrint('Stack trace: $stackTrace');
       debugPrint('Error type: ${e.runtimeType}');
-      
+
       return {
         'success': false,
         'message': 'An error occurred. Please try again: $e',
@@ -289,6 +289,35 @@ class ProprietaireService {
       return {
         'success': false,
         'message': 'An error occurred. Please try again: $e',
+      };
+    }
+  }
+
+  // Delete proprietaire
+  Future<Map<String, dynamic>> deleteProprietaire(String proprietaireId, String token) async {
+    try {
+      final response = await http.delete(
+        Uri.parse('$baseUrl/proprietaires/$proprietaireId'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      final decodedResponse = json.decode(response.body);
+      
+      if (response.statusCode == 200) {
+        return {'success': true, 'message': 'Propriétaire supprimé avec succès'};
+      } else {
+        return {
+          'success': false,
+          'message': decodedResponse['message'] ?? 'Erreur lors de la suppression du propriétaire'
+        };
+      }
+    } catch (e) {
+      return {
+        'success': false,
+        'message': 'Erreur de connexion: $e'
       };
     }
   }
