@@ -10,6 +10,7 @@ import 'OwnerDetailPage.dart';
 import '../providers/user_provider.dart';
 import '../services/proprietaire_service.dart';
 import 'add_proprietaire_page.dart';
+import 'edit_proprietaire_page.dart';
 
 class OwnersListPage extends StatefulWidget {
   @override
@@ -183,37 +184,94 @@ class _OwnersListPageState extends State<OwnersListPage> {
     }
   }
 
-  Widget _buildOwnerCard(Owner owner) {
-    return Card(
-      margin: EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-      color: Color(0xFF64B5F6),
-      child: ListTile(
-        title: Text(
-          owner.name,
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+  Widget _buildOwnerCard(dynamic owner) {
+    // Check if the owner is an Owner object or API data
+    if (owner is Owner) {
+      return Card(
+        margin: EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+        color: Color(0xFF64B5F6),
+        child: ListTile(
+          title: Text(
+            owner.name,
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          ),
+          subtitle: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Appartement ${owner.numApp}',
+                style: TextStyle(color: Colors.white),
+              ),
+              Text(
+                'Email: ${owner.email}',
+                style: TextStyle(color: Colors.white),
+              ),
+            ],
+          ),
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              IconButton(
+                icon: Icon(Icons.edit, color: Colors.white),
+                onPressed: () => _editProprietaire({
+                  'id': owner.id,
+                  'firstName': owner.name.split(' ').first,
+                  'lastName': owner.name.split(' ').last,
+                  'phoneNumber': owner.phone,
+                  'apartmentNumber': owner.numApp.toString(),
+                  'email': owner.email,
+                }),
+              ),
+              IconButton(
+                icon: Icon(Icons.delete, color: Colors.white),
+                onPressed: () => _deleteOwner(owner),
+              ),
+            ],
+          ),
         ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Appartement ${owner.numApp}',
-              style: TextStyle(color: Colors.white),
-            ),
-            Text(
-              'Email: ${owner.email}',
-              style: TextStyle(color: Colors.white),
-            ),
-          ],
+      );
+    } else {
+      // Handle API data (Map)
+      return Card(
+        margin: EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+        color: Color(0xFF64B5F6),
+        child: ListTile(
+          title: Text(
+            '${owner['firstName']} ${owner['lastName']}',
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          ),
+          subtitle: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Appartement ${owner['apartmentNumber']}',
+                style: TextStyle(color: Colors.white),
+              ),
+              Text(
+                'Email: ${owner['email']}',
+                style: TextStyle(color: Colors.white),
+              ),
+            ],
+          ),
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              IconButton(
+                icon: Icon(Icons.edit, color: Colors.white),
+                onPressed: () => _editProprietaire(owner),
+              ),
+              IconButton(
+                icon: Icon(Icons.delete, color: Colors.white),
+                onPressed: () => _showDeleteConfirmation(owner['id']),
+              ),
+            ],
+          ),
         ),
-        trailing: IconButton(
-          icon: Icon(Icons.delete, color: Colors.white),
-          onPressed: () => _showDeleteConfirmation(owner.id),
-        ),
-      ),
-    );
+      );
+    }
   }
 
-  void _showDeleteConfirmation(String proprietaireId) {
+  void _showDeleteConfirmation(String id) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -226,9 +284,21 @@ class _OwnersListPageState extends State<OwnersListPage> {
               child: Text("Annuler"),
             ),
             TextButton(
-              onPressed: () {
+              onPressed: () async {
+                final userProvider = Provider.of<UserProvider>(context, listen: false);
+                final token = userProvider.token;
+
+                if (token != null) {
+                  try {
+                    final result = await _proprietaireService.deleteProprietaire(id, token);
+                    if (result['success']) {
+                      _loadProprietaires();
+                    }
+                  } catch (e) {
+                    debugPrint('Error deleting proprietaire: $e');
+                  }
+                }
                 Navigator.pop(context);
-                _deleteProprietaire(proprietaireId);
               },
               child: Text("Supprimer", style: TextStyle(color: Colors.red)),
             ),
@@ -238,35 +308,17 @@ class _OwnersListPageState extends State<OwnersListPage> {
     );
   }
 
-  Future<void> _deleteProprietaire(String proprietaireId) async {
-    final userProvider = Provider.of<UserProvider>(context, listen: false);
-    final token = userProvider.token;
+  void _editProprietaire(Map<String, dynamic> proprietaire) async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => EditProprietairePage(proprietaire: proprietaire),
+      ),
+    );
 
-    if (token != null) {
-      try {
-        final result = await _proprietaireService.deleteProprietaire(proprietaireId, token);
-        
-        if (result['success']) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Propriétaire supprimé avec succès')),
-          );
-          _loadProprietaires(); // Refresh the list
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(result['message'] ?? 'Erreur lors de la suppression'),
-              backgroundColor: Colors.red,
-            ),
-          );
-        }
-      } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Erreur lors de la suppression: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
+    if (result == true) {
+      // Refresh the list if the proprietaire was updated
+      _loadProprietaires();
     }
   }
 

@@ -321,4 +321,48 @@ class ProprietaireService {
       };
     }
   }
+
+  Future<Map<String, dynamic>> updateProprietaire(
+    String proprietaireId,
+    Map<String, dynamic> proprietaireData,
+    String token,
+  ) async {
+    try {
+      debugPrint('Updating proprietaire $proprietaireId with token: $token');
+      debugPrint('Request data: ${jsonEncode(proprietaireData)}');
+
+      final response = await http.put(
+        Uri.parse('$baseUrl/proprietaires/$proprietaireId'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode(proprietaireData),
+      );
+
+      debugPrint('Response status code: ${response.statusCode}');
+      debugPrint('Response body: ${response.body}');
+
+      final Map<String, dynamic> responseData = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        return {
+          'success': true,
+          'message': responseData['message'] ?? 'Propriétaire mis à jour avec succès',
+          'proprietaire': responseData['proprietaire'],
+        };
+      } else {
+        return {
+          'success': false,
+          'message': responseData['message'] ?? 'Échec de la mise à jour du propriétaire',
+        };
+      }
+    } catch (e) {
+      debugPrint('Update proprietaire error: $e');
+      return {
+        'success': false,
+        'message': 'Une erreur est survenue. Veuillez réessayer: $e',
+      };
+    }
+  }
 }

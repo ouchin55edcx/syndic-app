@@ -24,9 +24,10 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 
   Future<void> _loadDashboardStats() async {
+    if (!mounted) return;  // Add this check
+    
     setState(() {
       _isLoading = true;
-      _errorMessage = '';
     });
 
     final userProvider = Provider.of<UserProvider>(context, listen: false);
@@ -37,25 +38,30 @@ class _DashboardPageState extends State<DashboardPage> {
         final result = await _dashboardService.getDashboardStats(token);
 
         if (result['success']) {
+          if (!mounted) return;  // Add this check before setState
           setState(() {
             _dashboardStats = result['stats'];
           });
         } else {
+          if (!mounted) return;  // Add this check before setState
           setState(() {
             _errorMessage = result['message'] ?? 'Échec de la récupération des statistiques';
           });
         }
       } catch (e) {
+        if (!mounted) return;  // Add this check before setState
         setState(() {
           _errorMessage = 'Une erreur est survenue: $e';
         });
       }
     } else {
+      if (!mounted) return;  // Add this check before setState
       setState(() {
         _errorMessage = 'Vous devez être connecté en tant que syndic pour voir les statistiques';
       });
     }
 
+    if (!mounted) return;  // Add this check before setState
     setState(() {
       _isLoading = false;
     });
