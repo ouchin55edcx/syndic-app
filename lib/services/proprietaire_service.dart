@@ -307,7 +307,10 @@ class ProprietaireService {
       final decodedResponse = json.decode(response.body);
       
       if (response.statusCode == 200) {
-        return {'success': true, 'message': 'Propriétaire supprimé avec succès'};
+        return {
+          'success': true,
+          'message': 'Propriétaire supprimé avec succès'
+        };
       } else {
         return {
           'success': false,

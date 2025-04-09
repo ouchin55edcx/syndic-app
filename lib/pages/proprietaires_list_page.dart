@@ -59,6 +59,102 @@ class _ProprietairesListPageState extends State<ProprietairesListPage> {
     });
   }
 
+  void _showDeleteConfirmation(String proprietaireId) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+          ),
+          title: Text(
+            'Confirmation',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          content: Text('Voulez-vous vraiment supprimer ce propriétaire ?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(
+                'Annuler',
+                style: TextStyle(
+                  color: Colors.grey[600],
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                Navigator.pop(context);
+                await _deleteProprietaire(proprietaireId);
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              child: Text(
+                'Supprimer',
+                style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _deleteProprietaire(String proprietaireId) async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final token = userProvider.token;
+
+    if (token != null) {
+      try {
+        final result = await _proprietaireService.deleteProprietaire(proprietaireId, token);
+        
+        if (result['success']) {
+          // Refresh the list after successful deletion
+          await _loadProprietaires();
+          
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(result['message']),
+              backgroundColor: Colors.green,
+            ),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(result['message']),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Une erreur est survenue lors de la suppression'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+
+    setState(() {
+      _isLoading = false;
+    });
+  }
+
   Widget _buildProprietaireCard(dynamic proprietaire) {
     // Get the apartment number from the nested appartement object
     final String appartementNumero = proprietaire['appartement']?['numero'] ?? 'Non assigné';
@@ -128,9 +224,7 @@ class _ProprietairesListPageState extends State<ProprietairesListPage> {
                 ),
                 IconButton(
                   icon: Icon(Icons.delete, color: Colors.white),
-                  onPressed: () {
-                    // Handle delete
-                  },
+                  onPressed: () => _showDeleteConfirmation(proprietaire['id']),
                 ),
               ],
             ),
