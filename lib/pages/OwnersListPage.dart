@@ -223,8 +223,8 @@ class _OwnersListPageState extends State<OwnersListPage> {
                 }),
               ),
               IconButton(
-                icon: Icon(Icons.delete, color: Colors.white),
-                onPressed: () => _deleteOwner(owner),
+                icon: Icon(Icons.delete, color: Colors.red[400]),
+                onPressed: () => _showDeleteConfirmation(owner.id),
               ),
             ],
           ),
@@ -261,7 +261,7 @@ class _OwnersListPageState extends State<OwnersListPage> {
                 onPressed: () => _editProprietaire(owner),
               ),
               IconButton(
-                icon: Icon(Icons.delete, color: Colors.white),
+                icon: Icon(Icons.delete, color: Colors.red[400]),
                 onPressed: () => _showDeleteConfirmation(owner['id']),
               ),
             ],
