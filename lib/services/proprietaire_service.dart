@@ -53,35 +53,62 @@ class ProprietaireService {
 
   Future<Map<String, dynamic>> getMyProprietaires(String token) async {
     try {
-      debugPrint('Fetching proprietaires with token: $token');
-      debugPrint('Authorization header: Bearer $token');
+      // Debug token format
+      debugPrint('Original token: $token');
+      final cleanToken = token.replaceAll('Bearer ', '');
+      debugPrint('Cleaned token: $cleanToken');
+      
+      // Debug request details
+      final uri = Uri.parse('$baseUrl/proprietaires');
+      debugPrint('Request URI: $uri');
+      
+      final headers = {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $cleanToken',
+      };
+      debugPrint('Request headers: $headers');
 
-      final response = await http.get(
-        Uri.parse('$baseUrl/proprietaires/my-proprietaires'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
-      );
+      // Make the request
+      final response = await http.get(uri, headers: headers);
 
+      // Debug response
       debugPrint('Response status code: ${response.statusCode}');
+      debugPrint('Response headers: ${response.headers}');
       debugPrint('Response body: ${response.body}');
 
+      // Parse response
       final Map<String, dynamic> responseData = jsonDecode(response.body);
+      debugPrint('Parsed response data: $responseData');
 
       if (response.statusCode == 200) {
+        // Debug proprietaires count
+        final proprietaires = responseData['proprietaires'] ?? [];
+        debugPrint('Number of proprietaires received: ${proprietaires.length}');
+        
+        // Debug first proprietaire if available
+        if (proprietaires.isNotEmpty) {
+          debugPrint('First proprietaire details: ${proprietaires.first}');
+        }
+
         return {
           'success': true,
-          'proprietaires': responseData['proprietaires'] ?? [],
+          'proprietaires': proprietaires,
         };
       } else {
+        debugPrint('Request failed with status: ${response.statusCode}');
+        debugPrint('Error message: ${responseData['message']}');
+        
         return {
           'success': false,
           'message': responseData['message'] ?? 'Failed to fetch proprietaires',
         };
       }
-    } catch (e) {
-      debugPrint('Get proprietaires error: $e');
+    } catch (e, stackTrace) {
+      // Enhanced error logging
+      debugPrint('Error in getMyProprietaires: $e');
+      debugPrint('Stack trace: $stackTrace');
+      debugPrint('Error type: ${e.runtimeType}');
+      
       return {
         'success': false,
         'message': 'An error occurred. Please try again: $e',

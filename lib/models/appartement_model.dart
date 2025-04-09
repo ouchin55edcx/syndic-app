@@ -1,6 +1,7 @@
 class Appartement {
   final String id;
   final String numero;
+  final bool isAvailable;
   final int etage;
   final double superficie;
   final int nombrePieces;
@@ -13,6 +14,7 @@ class Appartement {
   Appartement({
     required this.id,
     required this.numero,
+    this.isAvailable = true,
     required this.etage,
     required this.superficie,
     required this.nombrePieces,
@@ -27,6 +29,7 @@ class Appartement {
     return Appartement(
       id: json['id'] ?? '',
       numero: json['numero'] ?? '',
+      isAvailable: json['isAvailable'] ?? true,
       etage: json['etage'] ?? 0,
       superficie: (json['superficie'] ?? 0).toDouble(),
       nombrePieces: json['nombrePieces'] ?? 0,
@@ -42,6 +45,7 @@ class Appartement {
     return {
       'id': id,
       'numero': numero,
+      'isAvailable': isAvailable,
       'etage': etage,
       'superficie': superficie,
       'nombrePieces': nombrePieces,
@@ -52,7 +56,4 @@ class Appartement {
       'updatedAt': updatedAt,
     };
   }
-
-  // Helper method to check if apartment is available
-  bool get isAvailable => proprietaireId == null || proprietaireId!.isEmpty;
 }

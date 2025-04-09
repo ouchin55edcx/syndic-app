@@ -60,13 +60,16 @@ class _AddProprietairePageState extends State<AddProprietairePage> {
       final result = await _appartementService.getAllAppartements(token);
 
       if (result['success']) {
-        // Filter to only show available apartments (those without a proprietaire)
-        List<Appartement> availableAppartements = (result['appartements'] as List<Appartement>)
-            .where((apt) => apt.isAvailable)
-            .toList();
+        final allApartments = result['appartements'] as List<dynamic>;
+        
+        // Convert to Appartement objects without filtering
+        List<Appartement> apartments = allApartments.map((apt) {
+          if (apt is Appartement) return apt;
+          return Appartement.fromJson(apt as Map<String, dynamic>);
+        }).toList();
 
         setState(() {
-          _appartements = availableAppartements;
+          _appartements = apartments;
           if (_appartements.isNotEmpty) {
             _selectedAppartement = _appartements.first;
           }

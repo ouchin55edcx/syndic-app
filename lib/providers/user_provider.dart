@@ -34,4 +34,10 @@ class UserProvider extends ChangeNotifier {
     _isAuthenticated = false;
     notifyListeners();
   }
+
+  void setToken(String token) {
+    debugPrint('Setting token: $token');
+    // Remove any existing 'Bearer ' prefix
+    _token = token.replaceAll('Bearer ', '');
+  }
 }

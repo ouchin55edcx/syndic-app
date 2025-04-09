@@ -22,25 +22,55 @@ class _ProprietairesListPageState extends State<ProprietairesListPage> {
   }
 
   Future<void> _loadProprietaires() async {
+    debugPrint('Starting to load proprietaires...');
+    
     setState(() {
       _isLoading = true;
       _errorMessage = '';
     });
 
     final userProvider = Provider.of<UserProvider>(context, listen: false);
-    if (userProvider.token != null) {
-      final result = await _proprietaireService.getMyProprietaires(userProvider.token!);
-      
-      if (result['success']) {
+    final token = userProvider.token;
+
+    debugPrint('User provider token: $token');
+    debugPrint('Is user syndic: ${userProvider.isSyndic}');
+
+    if (token != null) {
+      try {
+        debugPrint('Making API request to fetch proprietaires...');
+        final result = await _proprietaireService.getMyProprietaires(token);
+
+        debugPrint('API request completed. Success: ${result['success']}');
+
+        if (result['success']) {
+          final proprietaires = result['proprietaires'] ?? [];
+          debugPrint('Received ${proprietaires.length} proprietaires');
+          
+          setState(() {
+            _proprietaires = proprietaires;
+          });
+
+          // Debug first proprietaire if available
+          if (proprietaires.isNotEmpty) {
+            debugPrint('First proprietaire: ${proprietaires.first}');
+          } else {
+            debugPrint('No proprietaires received from API');
+          }
+        } else {
+          debugPrint('API request failed: ${result['message']}');
+          setState(() {
+            _errorMessage = result['message'] ?? 'Failed to load proprietaires';
+          });
+        }
+      } catch (e, stackTrace) {
+        debugPrint('Error while loading proprietaires: $e');
+        debugPrint('Stack trace: $stackTrace');
         setState(() {
-          _proprietaires = result['proprietaires'] ?? [];
-        });
-      } else {
-        setState(() {
-          _errorMessage = result['message'] ?? 'Failed to load proprietaires';
+          _errorMessage = 'An error occurred while loading proprietaires: $e';
         });
       }
     } else {
+      debugPrint('No token available - user must be logged in');
       setState(() {
         _errorMessage = 'You must be logged in as a syndic to view proprietaires';
       });
@@ -49,6 +79,7 @@ class _ProprietairesListPageState extends State<ProprietairesListPage> {
     setState(() {
       _isLoading = false;
     });
+    debugPrint('Finished loading proprietaires');
   }
 
   Future<void> _navigateToAddProprietaire() async {
