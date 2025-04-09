@@ -380,7 +380,7 @@ class _AllPaymentsPageState extends State<AllPaymentsPage> {
                                               SizedBox(width: 8),
                                               Expanded(
                                                 child: Text(
-                                                  "Paiement #${payment.id.substring(0, 8)}...",
+                                                  "Paiement",  // Changed from "Paiement #${payment.id.substring(0, 8)}..."
                                                   style: TextStyle(
                                                     fontSize: 16,
                                                     fontWeight: FontWeight.bold,
@@ -421,16 +421,17 @@ class _AllPaymentsPageState extends State<AllPaymentsPage> {
                                                 ],
                                               ),
                                               SizedBox(height: 8),
-                                              Row(
-                                                children: [
-                                                  Icon(Icons.receipt, size: 16, color: Colors.blue),
-                                                  SizedBox(width: 4),
-                                                  Text(
-                                                    'Charge: ${payment.chargeId}',
-                                                  ),
-                                                ],
-                                              ),
-                                              SizedBox(height: 8),
+                                              // Remove this Row that shows the Charge ID
+                                              // Row(
+                                              //   children: [
+                                              //     Icon(Icons.receipt, size: 16, color: Colors.blue),
+                                              //     SizedBox(width: 4),
+                                              //     Text(
+                                              //       'Charge: ${payment.chargeId}',
+                                              //     ),
+                                              //   ],
+                                              // ),
+                                              // SizedBox(height: 8),
                                               Row(
                                                 children: [
                                                   Icon(Icons.payments, size: 16, color: Colors.blue),
