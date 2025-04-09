@@ -12,60 +12,39 @@ class PaymentPage extends StatefulWidget {
 }
 
 class _PaymentPageState extends State<PaymentPage> {
-  void _addPayment() async {
-    final newPayment = await Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => AddPaymentPage()),
-    );
-
-    if (newPayment != null) {
-      setState(() {
-        widget.owner.addPayment(newPayment); // Sauvegarde du paiement dans Owner
-      });
-    }
-  }
-
-  @override
+  final _formKey = GlobalKey<FormState>();
+  final _amountController = TextEditingController();
+  String _selectedPaymentMode = 'Espèces';
+  
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Versements de ${widget.owner.name}",
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
-        backgroundColor: Color.fromARGB(255, 64, 66, 69),
-        iconTheme: IconThemeData(color: Colors.white),
+        title: Text("Paiement"),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
+      body: SingleChildScrollView(
+        padding: EdgeInsets.all(16.0),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildDetailRow("Montant à payer", "${widget.owner.amount} MAD"),
-            _buildDetailRow("Montant impayé", "${widget.owner.remainingAmount} MAD"),
-            _buildDetailRow("Montant réglé", "${widget.owner.paidAmount} MAD"),
+            _buildDetailRow("Propriétaire", widget.owner.name),
+            _buildDetailRow("Montant impayé", "${widget.owner.remainingAmount.toStringAsFixed(2)} MAD"),
+            _buildDetailRow("Montant réglé", "${widget.owner.paidAmount.toStringAsFixed(2)} MAD"),
+            
             SizedBox(height: 20),
-            Expanded(
-              child: ListView.builder(
-                itemCount: widget.owner.payments.length, // Utiliser les paiements stockés
-                itemBuilder: (context, index) {
-                  return Card(
-                    margin: EdgeInsets.symmetric(vertical: 8),
-                    child: ListTile(
-                      title: Text("Montant : ${widget.owner.payments[index]['montant']}"),
-                      subtitle: Text("Date : ${widget.owner.payments[index]['date']} - Mode : ${widget.owner.payments[index]['mode']}"),
-                      leading: Icon(Icons.payment, color: Colors.blue),
-                    ),
-                  );
-                },
-              ),
-            ),
-            SizedBox(height: 0),
-            ElevatedButton(
-              onPressed: _addPayment,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green,
-                foregroundColor: Colors.white,
-                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-              ),
-              child: Text("Ajouter un paiement"),
+            Text("Historique des paiements", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            ListView.builder(
+              shrinkWrap: true,
+              physics: NeverScrollableScrollPhysics(),
+              itemCount: widget.owner.payments.length,
+              itemBuilder: (context, index) {
+                final payment = widget.owner.payments[index];
+                return Card(
+                  child: ListTile(
+                    title: Text("Montant : ${payment['montant']} MAD"),
+                    subtitle: Text("Date : ${payment['date']} - Mode : ${payment['mode']}"),
+                  ),
+                );
+              },
             ),
           ],
         ),

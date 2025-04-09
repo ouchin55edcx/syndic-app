@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'Owner.dart';
 import 'PaymentPage.dart';
 
@@ -16,43 +17,22 @@ class _OwnerDetailPageState extends State<OwnerDetailPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Détails du propriétaire",
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)),
-        centerTitle: true,
-        backgroundColor: Color.fromARGB(255, 64, 66, 69),
-        iconTheme: IconThemeData(color: Colors.white),
+        title: Text("Détails du propriétaire"),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
+      body: SingleChildScrollView(
+        padding: EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildDetailRow("Nom du propriétaire", widget.owner.name),
-            _buildDetailRow("Numéro d'immeuble", widget.owner.numImm.toString()),
-            _buildDetailRow("Numéro d'appartement", widget.owner.numApp.toString()),
-            _buildDetailRow("Montant à payer", "${widget.owner.amount.toStringAsFixed(2)} MAD"),
+            _buildDetailRow("Nom", widget.owner.name),
+            _buildDetailRow("Immeuble", widget.owner.numImm.toString()),
+            _buildDetailRow("Appartement", widget.owner.numApp.toString()),
             _buildDetailRow("Montant impayé", "${widget.owner.remainingAmount.toStringAsFixed(2)} MAD"),
             _buildDetailRow("Montant réglé", "${widget.owner.paidAmount.toStringAsFixed(2)} MAD"),
-            SizedBox(height: 20),
-
-            /// ✅ Bouton centré
-            Center(
-              child: ElevatedButton(
-                onPressed: () async {
-                  await Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => PaymentPage(owner: widget.owner)),
-                  );
-                  setState(() {}); // Met à jour l'affichage après retour
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Color.fromARGB(255, 75, 160, 173),
-                  foregroundColor: Colors.white,
-                  padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                ),
-                child: Text("Versement"),
-              ),
-            ),
+            _buildDetailRow("Téléphone", widget.owner.phone),
+            _buildDetailRow("Email", widget.owner.email),
+            _buildDetailRow("Date du contrat", 
+              DateFormat('dd/MM/yyyy').format(widget.owner.contractDate)),
           ],
         ),
       ),

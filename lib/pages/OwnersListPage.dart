@@ -72,15 +72,14 @@ class _OwnersListPageState extends State<OwnersListPage> {
   }
 
   void _convertApiProprietairesToOwners() {
-    // Convert API proprietaires to Owner objects
     List<Owner> newOwners = [];
     for (var proprietaire in _apiProprietaires) {
       newOwners.add(Owner(
-        id: int.tryParse(proprietaire['id'] ?? '0') ?? 0,
+        id: proprietaire['id'].toString(),  // Ensure ID is converted to String
         name: '${proprietaire['firstName'] ?? ''} ${proprietaire['lastName'] ?? ''}',
-        numImm: 1, // Default values since API might not have these fields
-        numApp: int.tryParse(proprietaire['appartementId']?.toString() ?? '0') ?? 0,
-        amount: 0.0, // Default value
+        numImm: 1,
+        numApp: int.tryParse(proprietaire['apartmentNumber'] ?? '0') ?? 0,
+        amount: 0.0,
         phone: proprietaire['phoneNumber'] ?? '',
         email: proprietaire['email'] ?? '',
         contractDate: proprietaire['ownershipDate'] != null
@@ -184,6 +183,93 @@ class _OwnersListPageState extends State<OwnersListPage> {
     }
   }
 
+  Widget _buildOwnerCard(Owner owner) {
+    return Card(
+      margin: EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+      color: Color(0xFF64B5F6),
+      child: ListTile(
+        title: Text(
+          owner.name,
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Appartement ${owner.numApp}',
+              style: TextStyle(color: Colors.white),
+            ),
+            Text(
+              'Email: ${owner.email}',
+              style: TextStyle(color: Colors.white),
+            ),
+          ],
+        ),
+        trailing: IconButton(
+          icon: Icon(Icons.delete, color: Colors.white),
+          onPressed: () => _showDeleteConfirmation(owner.id),
+        ),
+      ),
+    );
+  }
+
+  void _showDeleteConfirmation(String proprietaireId) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Confirmer la suppression"),
+          content: Text("Voulez-vous vraiment supprimer ce propriétaire ?"),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text("Annuler"),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                _deleteProprietaire(proprietaireId);
+              },
+              child: Text("Supprimer", style: TextStyle(color: Colors.red)),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _deleteProprietaire(String proprietaireId) async {
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final token = userProvider.token;
+
+    if (token != null) {
+      try {
+        final result = await _proprietaireService.deleteProprietaire(proprietaireId, token);
+        
+        if (result['success']) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Propriétaire supprimé avec succès')),
+          );
+          _loadProprietaires(); // Refresh the list
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(result['message'] ?? 'Erreur lors de la suppression'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erreur lors de la suppression: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final userProvider = Provider.of<UserProvider>(context);
@@ -266,59 +352,7 @@ class _OwnersListPageState extends State<OwnersListPage> {
                               itemCount: filteredOwners.length,
                               itemBuilder: (context, index) {
                                 final owner = filteredOwners[index];
-                                return Card(
-                                  color: Colors.blue.withOpacity(0.6),
-                                  margin: EdgeInsets.all(8.0),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  child: ListTile(
-                                    onTap: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) => OwnerDetailPage(owner: owner),
-                                        ),
-                                      );
-                                    },
-                                    title: Text(
-                                      owner.name,
-                                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                                    ),
-                                    subtitle: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          "Immeuble ${owner.numImm}, Appartement ${owner.numApp}",
-                                          style: TextStyle(color: Colors.white),
-                                        ),
-                                        if (owner.amount > 0)
-                                          Text(
-                                            "Montant à payer: ${owner.amount.toStringAsFixed(2)} MAD",
-                                            style: TextStyle(color: Colors.white),
-                                          ),
-                                        Text(
-                                          "Email: ${owner.email}",
-                                          style: TextStyle(color: Colors.white),
-                                        ),
-                                      ],
-                                    ),
-                                    isThreeLine: true,
-                                    trailing: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        IconButton(
-                                          icon: Icon(Icons.edit, color: Colors.white),
-                                          onPressed: () => _editOwner(owner),
-                                        ),
-                                        IconButton(
-                                          icon: Icon(Icons.delete, color: Colors.red),
-                                          onPressed: () => _deleteOwner(owner),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                );
+                                return _buildOwnerCard(owner);
                               },
                             ),
                     ),

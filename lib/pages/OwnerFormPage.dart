@@ -40,14 +40,14 @@ class _OwnerFormPageState extends State<OwnerFormPage> {
   if (!_formKey.currentState!.validate()) return;
 
   final owner = Owner(
-    id: widget.owner?.id ?? DateTime.now().millisecondsSinceEpoch,
+    id: widget.owner?.id ?? DateTime.now().toString(), // Convert to String
     name: nameController.text,
-    numImm: int.tryParse(numImmController.text) ?? 0,
-    numApp: int.tryParse(numAppController.text) ?? 0,
-    amount: double.tryParse(amountController.text) ?? 0.0,
+    numImm: int.parse(numImmController.text),
+    numApp: int.parse(numAppController.text),
+    amount: double.parse(amountController.text),
     email: emailController.text,
     phone: telephoneController.text,
-    contractDate: DateTime.tryParse(contractDateController.text) ?? DateTime.now(),
+    contractDate: DateTime.parse(contractDateController.text),
   );
 
   widget.onSave(owner);

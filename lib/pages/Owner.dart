@@ -1,14 +1,15 @@
 class Owner {
-  int id;
-  String name;
-  int numImm;
-  int numApp;
-  double amount; // Montant total à payer
-  double paidAmount = 0; // Montant déjà réglé
-  String phone;
-  String email;
-  DateTime contractDate;
-  List<Map<String, String>> payments = [];
+  final String id;
+  final String name;
+  final int numImm;
+  final int numApp;
+  final double amount;
+  final String phone;
+  final String email;
+  final DateTime contractDate;
+  final double remainingAmount;
+  final double paidAmount;
+  final List<Map<String, dynamic>> payments;
 
   Owner({
     required this.id,
@@ -19,15 +20,12 @@ class Owner {
     required this.phone,
     required this.email,
     required this.contractDate,
-  });
+    this.remainingAmount = 0.0,
+    this.paidAmount = 0.0,
+    List<Map<String, dynamic>>? payments,
+  }) : this.payments = payments ?? [];
 
-  double get remainingAmount => amount - paidAmount;
-
-  void updatePayments(double amountPaid) {
-    paidAmount += amountPaid;
-  }
-  void addPayment(Map<String, String> payment) {
+  void addPayment(Map<String, dynamic> payment) {
     payments.add(payment);
-    updatePayments(double.parse(payment["montant"]!.split(" ")[0])); // Met à jour le montant payé
   }
 }
