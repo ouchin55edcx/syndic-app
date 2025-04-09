@@ -1,7 +1,7 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 import '../providers/user_provider.dart';
 import '../services/proprietaire_service.dart';
 import '../models/proprietaire_profile_model.dart';
@@ -20,11 +20,11 @@ class ProprietaireProfilePage extends StatefulWidget {
 
 class _ProprietaireProfilePageState extends State<ProprietaireProfilePage> {
   final ProprietaireService _proprietaireService = ProprietaireService();
+  final ImagePicker _picker = ImagePicker();
+  File? _profileImage;
   bool _isLoading = true;
   String _errorMessage = '';
   ProprietaireProfile? _profile;
-  File? _profileImage;
-  final ImagePicker _picker = ImagePicker();
 
   @override
   void initState() {
@@ -68,15 +68,6 @@ class _ProprietaireProfilePageState extends State<ProprietaireProfilePage> {
     setState(() {
       _isLoading = false;
     });
-  }
-
-  Future<void> _pickImage(ImageSource source) async {
-    final pickedFile = await _picker.pickImage(source: source);
-    if (pickedFile != null) {
-      setState(() {
-        _profileImage = File(pickedFile.path);
-      });
-    }
   }
 
   void _navigateToEditProfile() async {
@@ -153,6 +144,88 @@ class _ProprietaireProfilePageState extends State<ProprietaireProfilePage> {
           ),
         ],
       ),
+      body: _isLoading
+          ? Center(child: CircularProgressIndicator())
+          : _errorMessage.isNotEmpty
+              ? Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          _errorMessage,
+                          style: TextStyle(color: Colors.red),
+                          textAlign: TextAlign.center,
+                        ),
+                        SizedBox(height: 16),
+                        ElevatedButton(
+                          onPressed: _loadProfile,
+                          child: Text('Réessayer'),
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+              : _profile == null
+                  ? Center(child: Text('Aucune information de profil disponible'))
+                  : SingleChildScrollView(
+                      child: Padding(
+                        padding: EdgeInsets.all(20),
+                        child: Column(
+                          children: [
+                            SizedBox(height: 30),
+                            _buildInfoCard(),
+                            SizedBox(height: 20),
+                            _buildApartmentCard(),
+                            SizedBox(height: 30),
+                            Container(
+                              width: double.infinity,
+                              height: 55,
+                              child: ElevatedButton(
+                                onPressed: _navigateToEditProfile,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color.fromARGB(255, 75, 160, 173),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                ),
+                                child: Text(
+                                  'Modifier le profil',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            SizedBox(height: 20),
+                            Container(
+                              width: double.infinity,
+                              height: 55,
+                              child: ElevatedButton(
+                                onPressed: _logout,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.red,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                ),
+                                child: Text(
+                                  'Déconnexion',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: 0, // Profile page is selected
         backgroundColor: const Color.fromARGB(255, 64, 66, 69),
@@ -192,118 +265,6 @@ class _ProprietaireProfilePageState extends State<ProprietaireProfilePage> {
           }
         },
       ),
-      body: _isLoading
-          ? Center(child: CircularProgressIndicator())
-          : _errorMessage.isNotEmpty
-              ? Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          _errorMessage,
-                          style: TextStyle(color: Colors.red),
-                          textAlign: TextAlign.center,
-                        ),
-                        SizedBox(height: 16),
-                        ElevatedButton(
-                          onPressed: _loadProfile,
-                          child: Text('Réessayer'),
-                        ),
-                      ],
-                    ),
-                  ),
-                )
-              : _profile == null
-                  ? Center(child: Text('Aucune information de profil disponible'))
-                  : SingleChildScrollView(
-                      child: Padding(
-                        padding: EdgeInsets.all(20),
-                        child: Column(
-                          children: [
-                            Stack(
-                              alignment: Alignment.bottomRight,
-                              children: [
-                                CircleAvatar(
-                                  radius: 80,
-                                  backgroundColor: const Color.fromARGB(255, 198, 198, 198),
-                                  backgroundImage:
-                                      _profileImage != null ? FileImage(_profileImage!) : null,
-                                  child: _profileImage == null
-                                      ? Icon(Icons.person, size: 80, color: Colors.white)
-                                      : null,
-                                ),
-                                GestureDetector(
-                                  onTap: () {
-                                    _showImageSourceDialog(context);
-                                  },
-                                  child: CircleAvatar(
-                                    radius: 25,
-                                    backgroundColor: const Color.fromARGB(255, 75, 160, 173),
-                                    child: Icon(Icons.camera_alt, color: Colors.white),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            SizedBox(height: 20),
-                            Text(
-                              _profile!.fullName,
-                              style: TextStyle(
-                                fontSize: 24,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            SizedBox(height: 5),
-                            Text(
-                              _profile!.email,
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: Colors.grey[600],
-                              ),
-                            ),
-                            SizedBox(height: 30),
-                            _buildInfoCard(),
-                            SizedBox(height: 20),
-                            _buildApartmentCard(),
-                            SizedBox(height: 20),
-                            _buildFinancialManagementCard(),
-                            SizedBox(height: 30),
-                            Column(
-                              children: [
-                                ElevatedButton.icon(
-                                  onPressed: _navigateToEditProfile,
-                                  icon: Icon(Icons.edit),
-                                  label: Text("Modifier le profil"),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: const Color.fromARGB(255, 75, 160, 173),
-                                    foregroundColor: Colors.white,
-                                    padding: EdgeInsets.symmetric(horizontal: 30, vertical: 12),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(10),
-                                    ),
-                                  ),
-                                ),
-                                SizedBox(height: 16),
-                                ElevatedButton.icon(
-                                  onPressed: _logout,
-                                  icon: Icon(Icons.logout),
-                                  label: Text("Déconnexion"),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.red,
-                                    foregroundColor: Colors.white,
-                                    padding: EdgeInsets.symmetric(horizontal: 30, vertical: 12),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(10),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
     );
   }
 
@@ -330,10 +291,13 @@ class _ProprietaireProfilePageState extends State<ProprietaireProfilePage> {
             SizedBox(height: 15),
             _buildInfoRow(Icons.email, "Email", _profile!.email),
             SizedBox(height: 15),
-            _buildInfoRow(Icons.calendar_today, "Date d'acquisition",
-                _profile!.ownershipDate != null
-                    ? _formatDate(_profile!.ownershipDate!)
-                    : "Non spécifiée"),
+            _buildInfoRow(
+              Icons.calendar_today, 
+              "Date d'acquisition",
+              _profile!.ownershipDate != null
+                  ? _formatDate(_profile!.ownershipDate!)
+                  : "Non spécifiée"
+            ),
           ],
         ),
       ),
@@ -351,76 +315,34 @@ class _ProprietaireProfilePageState extends State<ProprietaireProfilePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  "Informations sur l'appartement",
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                Icon(
-                  Icons.apartment,
-                  color: const Color.fromARGB(255, 75, 160, 173),
-                  size: 24,
-                ),
-              ],
+            Text(
+              "Informations sur l'appartement",
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
             ),
             Divider(height: 30),
-            if (_profile?.appartement != null) ...[
-              _buildInfoRow(Icons.numbers, "Numéro", _profile!.appartement!.numero),
+            if (_profile!.appartement != null) ...[
+              _buildInfoRow(Icons.apartment, "Numéro", _profile!.appartement!.numero),
               SizedBox(height: 15),
-              _buildInfoRow(Icons.stairs, "Étage", "${_profile!.appartement!.etage}"),
+              _buildInfoRow(Icons.stairs, "Étage", _profile!.appartement!.etage.toString()),
               SizedBox(height: 15),
               _buildInfoRow(Icons.square_foot, "Superficie", "${_profile!.appartement!.superficie} m²"),
               SizedBox(height: 15),
-              _buildInfoRow(Icons.meeting_room, "Nombre de pièces", "${_profile!.appartement!.nombrePieces}"),
+              _buildInfoRow(Icons.meeting_room, "Nombre de pièces", _profile!.appartement!.nombrePieces.toString()),
               SizedBox(height: 15),
-              _buildInfoRow(Icons.home_work, "Statut", _profile!.appartement!.statut),
-              SizedBox(height: 15),
-              _buildInfoRow(
-                Icons.calendar_today,
-                "Date de création",
-                _formatDate(_profile!.appartement!.createdAt),
-              ),
-              SizedBox(height: 15),
-              _buildInfoRow(
-                Icons.update,
-                "Dernière mise à jour",
-                _formatDate(_profile!.appartement!.updatedAt),
-              ),
-              if (_profile!.appartement!.immeubleId != null) ...[
-                SizedBox(height: 15),
-                _buildInfoRow(
-                  Icons.domain,
-                  "ID Immeuble",
-                  _profile!.appartement!.immeubleId!,
-                ),
-              ],
+              _buildInfoRow(Icons.info_outline, "Statut", _profile!.appartement!.statut),
             ] else
               Center(
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    children: [
-                      Icon(
-                        Icons.home_work_outlined,
-                        size: 48,
-                        color: Colors.grey,
-                      ),
-                      SizedBox(height: 16),
-                      Text(
-                        "Aucun appartement associé à ce profil",
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.grey[600],
-                          fontStyle: FontStyle.italic,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
+                  child: Text(
+                    "Aucun appartement associé à ce profil",
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.grey[600],
+                    ),
                   ),
                 ),
               ),
@@ -547,17 +469,20 @@ class _ProprietaireProfilePageState extends State<ProprietaireProfilePage> {
     );
   }
 
-  String _formatDate(dynamic date) {
+  String _formatDate(DateTime date) {
     try {
-      if (date is DateTime) {
-        return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
-      } else if (date is String) {
-        final parsedDate = DateTime.parse(date);
-        return '${parsedDate.day.toString().padLeft(2, '0')}/${parsedDate.month.toString().padLeft(2, '0')}/${parsedDate.year}';
-      }
-      return 'Date invalide';
+      return '${date.day}/${date.month}/${date.year}';
     } catch (e) {
       return 'Date invalide';
+    }
+  }
+
+  Future<void> _pickImage(ImageSource source) async {
+    final XFile? pickedFile = await _picker.pickImage(source: source);
+    if (pickedFile != null) {
+      setState(() {
+        _profileImage = File(pickedFile.path);
+      });
     }
   }
 
