@@ -573,6 +573,16 @@ class _NotificationsPageState extends State<NotificationsPage> {
       return dateString;
     }
   }
+
+  // For payment confirmation notifications
+  String getPaymentConfirmationMessage(double amount) {
+    return 'Votre paiement de ${amount.toStringAsFixed(2)} DH a été confirmé. La charge est entièrement payée.';
+  }
+
+  // For payment notice notifications
+  String getPaymentNoticeMessage(String chargeName, double amount) {
+    return 'Un avis de paiement a été généré pour la charge "$chargeName". Montant restant à payer: ${amount.toStringAsFixed(2)} DH';
+  }
 }
 
 

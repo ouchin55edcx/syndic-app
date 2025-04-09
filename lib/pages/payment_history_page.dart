@@ -512,7 +512,7 @@ class _PaymentHistoryPageState extends State<PaymentHistoryPage> {
                                                       children: [
                                                         Row(
                                                           children: [
-                                                            Icon(Icons.euro, size: 16, color: Colors.blue),
+                                                            Icon(Icons.payments, size: 16, color: Colors.blue),
                                                             SizedBox(width: 4),
                                                             Text(
                                                               'Montant: ${Payment.formatCurrency(payment.montant)}',
@@ -748,7 +748,7 @@ class _PaymentHistoryPageState extends State<PaymentHistoryPage> {
                                                         SizedBox(height: 16),
                                                         Row(
                                                           children: [
-                                                            Icon(Icons.euro, size: 16, color: Colors.blue),
+                                                            Icon(Icons.payments, size: 16, color: Colors.blue),
                                                             SizedBox(width: 4),
                                                             Text(
                                                               'Montant: ${Charge.formatCurrency(charge.montant)}',

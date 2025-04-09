@@ -94,6 +94,6 @@ class Charge {
 
   // Helper method to format currency
   static String formatCurrency(double amount) {
-    return '${amount.toStringAsFixed(2)} €';
+    return '${amount.toStringAsFixed(2)} DH';
   }
 }

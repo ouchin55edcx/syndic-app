@@ -265,8 +265,8 @@ class _MakePaymentPageState extends State<MakePaymentPage> {
                 TextFormField(
                   controller: _montantController,
                   decoration: InputDecoration(
-                    labelText: "Montant (€)",
-                    prefixIcon: Icon(Icons.euro),
+                    labelText: "Montant (DH)",
+                    prefixIcon: Icon(Icons.payments),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),

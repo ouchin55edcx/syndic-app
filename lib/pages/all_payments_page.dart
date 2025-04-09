@@ -433,7 +433,7 @@ class _AllPaymentsPageState extends State<AllPaymentsPage> {
                                               SizedBox(height: 8),
                                               Row(
                                                 children: [
-                                                  Icon(Icons.euro, size: 16, color: Colors.blue),
+                                                  Icon(Icons.payments, size: 16, color: Colors.blue),
                                                   SizedBox(width: 4),
                                                   Text(
                                                     'Montant: ${Payment.formatCurrency(payment.montant)}',

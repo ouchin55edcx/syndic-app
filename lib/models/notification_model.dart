@@ -89,3 +89,7 @@ class Notification {
     }
   }
 }
+
+String formatAmount(double amount) {
+  return '${amount.toStringAsFixed(2)} DH';
+}
