@@ -412,10 +412,8 @@ class _ChargesListPageState extends State<ChargesListPage> {
                                           child: Row(
                                             children: [
                                               Icon(
-                                                charge.montantRestant == 0 ? Icons.check_circle : (isPartiallyPaid ? Icons.timelapse : Icons.warning),
-                                                color: charge.montantRestant == 0 
-                                                    ? Colors.green 
-                                                    : Color(int.parse(Charge.getStatusColor(charge.statut).substring(1, 7), radix: 16) + 0xFF000000),
+                                                isPaid ? Icons.check_circle : (isPartiallyPaid ? Icons.timelapse : Icons.warning),
+                                                color: Color(int.parse(Charge.getStatusColor(charge.statut).substring(1, 7), radix: 16) + 0xFF000000),
                                               ),
                                               SizedBox(width: 8),
                                               Expanded(
@@ -430,13 +428,11 @@ class _ChargesListPageState extends State<ChargesListPage> {
                                               Container(
                                                 padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                                 decoration: BoxDecoration(
-                                                  color: charge.montantRestant == 0 
-                                                    ? Colors.green 
-                                                    : Color(int.parse(Charge.getStatusColor(charge.statut).substring(1, 7), radix: 16) + 0xFF000000),
+                                                  color: Color(int.parse(Charge.getStatusColor(charge.statut).substring(1, 7), radix: 16) + 0xFF000000),
                                                   borderRadius: BorderRadius.circular(12),
                                                 ),
                                                 child: Text(
-                                                  charge.montantRestant == 0 ? 'Payé' : charge.statut,
+                                                  charge.statut,
                                                   style: TextStyle(
                                                     color: Colors.white,
                                                     fontWeight: FontWeight.bold,

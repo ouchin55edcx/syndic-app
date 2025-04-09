@@ -9,7 +9,7 @@ class UserAvatar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: size, // Set the width of the container
+      width: size, 
       height: size, // Set the height of the container
       decoration: BoxDecoration(
         image: imageUrl != null

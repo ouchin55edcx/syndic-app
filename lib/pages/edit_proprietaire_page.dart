@@ -20,7 +20,7 @@ class _EditProprietairePageState extends State<EditProprietairePage> {
   late TextEditingController _lastNameController;
   late TextEditingController _phoneNumberController;
   late TextEditingController _apartmentNumberController;
-  late TextEditingController _buildingIdController;
+  // Suppression de _buildingIdController
 
   bool _isLoading = false;
   String _errorMessage = '';
@@ -33,7 +33,7 @@ class _EditProprietairePageState extends State<EditProprietairePage> {
     _lastNameController = TextEditingController(text: widget.proprietaire['lastName']);
     _phoneNumberController = TextEditingController(text: widget.proprietaire['phoneNumber']);
     _apartmentNumberController = TextEditingController(text: widget.proprietaire['apartmentNumber']);
-    _buildingIdController = TextEditingController(text: widget.proprietaire['buildingId']);
+    // Suppression de _buildingIdController
   }
 
   @override
@@ -42,7 +42,7 @@ class _EditProprietairePageState extends State<EditProprietairePage> {
     _lastNameController.dispose();
     _phoneNumberController.dispose();
     _apartmentNumberController.dispose();
-    _buildingIdController.dispose();
+    // Suppression de _buildingIdController
     super.dispose();
   }
 
@@ -66,7 +66,7 @@ class _EditProprietairePageState extends State<EditProprietairePage> {
         'lastName': _lastNameController.text.trim(),
         'phoneNumber': _phoneNumberController.text.trim(),
         'apartmentNumber': _apartmentNumberController.text.trim(),
-        'buildingId': _buildingIdController.text.trim(),
+        // Suppression de buildingId dans les données envoyées
       };
 
       try {
@@ -178,17 +178,7 @@ class _EditProprietairePageState extends State<EditProprietairePage> {
                   return null;
                 },
               ),
-              SizedBox(height: 16.0),
-              TextFormField(
-                controller: _buildingIdController,
-                decoration: InputDecoration(labelText: 'ID de l\'immeuble'),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Veuillez entrer l\'ID de l\'immeuble';
-                  }
-                  return null;
-                },
-              ),
+              // Suppression du champ buildingId
               SizedBox(height: 24.0),
               ElevatedButton(
                 onPressed: _isLoading ? null : _updateProprietaire,
